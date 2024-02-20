@@ -15,8 +15,8 @@ bool TextureManager::loadTexture(const char* fileName,
 	SDL_Texture* tex = SDL_CreateTextureFromSurface(ren, tempSurface);
 
 	SDL_FreeSurface(tempSurface);
-	/*delete tempSurface;
-	tempSurface = nullptr;*/
+
+	//tempSurface = nullptr;
 
 	if (tex != 0) {
 		textureMap[id] = tex;

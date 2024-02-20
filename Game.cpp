@@ -91,10 +91,6 @@ void Game::clean()
 	std::cout << "cleaning game\n";
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
-	/*delete window;
-	window = nullptr;
-	delete renderer;
-	renderer = nullptr;*/
 	SDL_Quit();
 }
 
@@ -116,4 +112,6 @@ Game::~Game()
 {
 	delete window;
 	delete renderer;
+	//window = nullptr;
+	//renderer = nullptr;
 }

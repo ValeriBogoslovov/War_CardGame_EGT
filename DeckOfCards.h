@@ -13,11 +13,11 @@ public:
 
 
 private:
-	/*std::queue<std::unique_ptr<Card>> shuffledDeck;
-	std::vector<std::unique_ptr<Card>> initialDeck;*/
+	std::queue<std::unique_ptr<Card>> shuffledDeck;
+	std::vector<std::unique_ptr<Card>> initialDeck;
 
-	std::queue<Card*> shuffledDeck;
-	std::vector<Card*> initialDeck;
+	/*std::queue<Card*> shuffledDeck;
+	std::vector<Card*> initialDeck;*/
 
 	void createDeck();
 	void shuffleDeck();
