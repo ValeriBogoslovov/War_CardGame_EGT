@@ -15,13 +15,15 @@ bool TextureManager::loadTexture(const char* fileName,
 	SDL_Texture* tex = SDL_CreateTextureFromSurface(ren, tempSurface);
 
 	SDL_FreeSurface(tempSurface);
+	/*delete tempSurface;
+	tempSurface = nullptr;*/
 
 	if (tex != 0) {
 		textureMap[id] = tex;
 		return true;
 	}
 
-	return false; // something went wrong
+	return false;
 }
 
 void TextureManager::drawTexture(std::string id,
@@ -30,6 +32,12 @@ void TextureManager::drawTexture(std::string id,
 	SDL_RendererFlip flip)
 {
 	SDL_RenderCopyEx(ren, textureMap[id], NULL, &destRect, 0, 0, flip);
+}
+
+TextureManager::~TextureManager()
+{
+	delete instance;
+	instance = nullptr;
 }
 
 TextureManager* TextureManager::instance = 0;

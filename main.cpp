@@ -1,12 +1,12 @@
 #include <iostream>
-
+#include "DeckOfCards.h"
 #include "Game.h"
 
 //Game* game = NULL;
 //const int WINDOW_WIDTH = 1280;
 //const int WINDOW_HEIGHT = 720;
 
-int main(int, char**)
+int main(int argc, char* argv[])
 {
 	/*game = new Game();
 	game->init("War card game window",
@@ -22,6 +22,8 @@ int main(int, char**)
 		game->render();
 	}
 	game->clean();*/
+
+	DeckOfCards d;
 
 	return 0;
 }

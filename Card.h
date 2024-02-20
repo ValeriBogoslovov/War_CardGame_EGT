@@ -8,7 +8,6 @@ public:
 	std::string getFace()const;
 	std::string getSuit()const;
 	std::string getID()const;
-
 	~Card();
 private:
 	std::string face;
