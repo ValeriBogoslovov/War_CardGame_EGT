@@ -46,7 +46,9 @@ void DeckOfCards::shuffleDeck()
 		initialDeck.at(i) = initialDeck.at(index);
 		initialDeck.at(index) = temp;
 		std::cout << temp->getFace() << "-" << temp->getSuit() << std::endl;
+		temp = nullptr;
 	}
+	
 	std::cout << "Deck shuffled.\n\n";
 }
 
