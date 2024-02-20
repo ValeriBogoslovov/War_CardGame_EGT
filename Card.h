@@ -8,10 +8,12 @@ public:
 	std::string getFace()const;
 	std::string getSuit()const;
 	std::string getID()const;
+	int getPower()const;
 	~Card();
 private:
 	std::string face;
 	std::string suit;
 	std::string id;
+	int power;
 };
 
