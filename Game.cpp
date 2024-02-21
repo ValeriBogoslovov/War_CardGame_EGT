@@ -1,8 +1,9 @@
 //Game.cpp
+#include <iostream>
+#include <SDL.h>
+
 #include "Game.h"
 #include "TextureManager.h"
-#include <iostream>
-
 
 Game::Game()
 {
@@ -101,13 +102,7 @@ void Game::update()
 
 }
 
-void Game::clean()
-{
-	std::cout << "cleaning game\n";
-	SDL_DestroyWindow(window);
-	SDL_DestroyRenderer(renderer);
-	SDL_Quit();
-}
+
 
 bool Game::isRunning()
 {
@@ -154,10 +149,16 @@ Card Game::drawCard()
 	return c;
 }
 
+void Game::clean()
+{
+	std::cout << "cleaning game\n";
+	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(renderer);
+	SDL_Quit();
+}
+
 Game::~Game()
 {
-	delete window;
-	delete renderer;
-	window = nullptr;
 	renderer = nullptr;
+	window = nullptr;
 }

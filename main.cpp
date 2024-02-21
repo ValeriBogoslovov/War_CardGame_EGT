@@ -26,9 +26,39 @@ int main(int argc, char* argv[])
 		std::cin >> input;
 		if (input == 1)
 		{
+			
 			gs.putCardToTable();
-			gs.checkPlayersCards();
+			gs.printPlayersCardPowers();
+			gs.checkAndSetPlayersForWars();
+			if (gs.getPlayers().at(0).isAtWar && gs.getPlayers().at(1).isAtWar && gs.getPlayers().at(2).isAtWar)
+			{
+				std::cout << "Three player WAR! \n\n";
+				// TO DO three players war method
+				gs.threePlayerWar();
+				
+			}
+			else if (gs.getPlayers().at(0).isAtWar && gs.getPlayers().at(1).isAtWar)
+			{
+				std::cout << "Player 1 vs Player 2 WAR! \n\n";
+				// TO DO two players war method
+				gs.twoPlayerWar(0, 1);
+				
+			}
+			else if (gs.getPlayers().at(0).isAtWar && gs.getPlayers().at(2).isAtWar)
+			{
+				std::cout << "Player 1 vs Player 3 WAR! \n\n";
+				gs.twoPlayerWar(0, 2);
+				
+			}
+			else if (gs.getPlayers().at(1).isAtWar && gs.getPlayers().at(2).isAtWar)
+			{
+				std::cout << "Player 2 vs Player 3 WAR! \n\n";
+				gs.twoPlayerWar(1, 2);
+				
+			}
 		}
+		std::cout << std::endl;
+		gs.checkAndSetPlayerIfPlaying();
 	}
 	/*while (game->isRunning())
 	{
@@ -42,7 +72,7 @@ int main(int argc, char* argv[])
 	//TO DO
 	// Deal cards - done
 	// Implement rules (check for wars, power of cards)
-	// Point system
+	// Point system -> Statistic static members for each player?
 	// Restart game
 	// Statistics
 	// Graphics

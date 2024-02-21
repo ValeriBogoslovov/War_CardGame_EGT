@@ -6,16 +6,18 @@ class Player
 {
 public:
 	void addCard(Card c);
-	void setPlayerID(std::string id);
+	void setPlayerID(int id);
 
 	std::queue<Card>& getPlayerDeck();
-	//std::queue<Card>& getDicardedDeck();
-	std::string getPlayerID() const;
+	int getPlayerID() const;
+
+	bool isPlaying = true;
+	bool hasWonGame = false;
+	bool hasWonWar = false;
+	bool isAtWar = false;
 
 private:
 	std::queue<Card> playerDeck;
-	//std::queue<Card> discardedCards;
-	int playerPoints = 0;
-	std::string playerID;
+	int playerID;
 };
 

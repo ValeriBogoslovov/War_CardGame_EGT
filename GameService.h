@@ -11,7 +11,12 @@ public:
 	void createPlayers();
 	void dealCardsToPlayers();
 	void putCardToTable();
-	void checkPlayersCards();
+	void checkAndSetPlayerIfPlaying();
+
+	void printPlayersCardPowers();
+	void checkAndSetPlayersForWars();
+	void threePlayerWar();
+	void twoPlayerWar(int firstId, int secondID);
 
 	Card drawCard();
 
@@ -19,6 +24,7 @@ public:
 	std::queue<Card>& getDiscardedCards();
 
 	bool playerWon = false;
+
 	bool isWar = false;
 
 private:
