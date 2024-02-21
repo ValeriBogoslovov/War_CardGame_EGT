@@ -1,5 +1,8 @@
-#include "DeckOfCards.h"
 #include <iostream>
+#include <algorithm> // needed for std::shuffle()
+#include <random> // needed for std::random_device and std::mt19937
+
+#include "DeckOfCards.h"
 
 DeckOfCards::DeckOfCards()
 {
@@ -12,66 +15,45 @@ void DeckOfCards::createDeck()
 	const std::string suit[4] = { "Hearts", "Diamonds", "Clubs", "Spades" };
 
 	const std::string face[13] =
-	{ "Ace", "Deuce", "Three", "Four",
+	{ "Deuce", "Three", "Four",
 		"Five", "Six", "Seven", "Eight", "Nine",
-		"Ten", "Jack", "Queen", "King" };
+		"Ten", "Jack", "Queen", "King", "Ace"};
 
+	// fill initial vector deck
 	for (int i = 0; i < 52; i++)
 	{
 		std::string cardId = std::to_string(i);
 		std::string cardFace = face[i % 13];
 		std::string cardSuit = suit[i / 13];
-		//initialDeck.push_back(std::make_unique<Card>(cardFace, cardSuit, cardId));
-		initialDeck.emplace_back(std::make_unique<Card>(cardId, cardFace, cardSuit));
+		int cardPower = (i % 13) + 2;
+		Card c(cardFace, cardSuit, cardId, cardPower);
+		initialDeck.push_back(c);
 	}
 	std::cout << "Initial deck created.\n\n";
-	shuffleDeck();
-	fillQueueCards();
-}
-
-void DeckOfCards::shuffleDeck()
-{
-	std::srand(time(NULL));
-
-	for (int i = 0; i < 52; i++)
-	{
-		int index = rand() % 52;
-
-
-		initialDeck.at(i) = std::move(initialDeck.at(index));
-		initialDeck.at(index) = std::move(initialDeck.at(i));
-		//Card* temp = initialDeck.at(i);
-		//initialDeck.at(i) = initialDeck.at(index);
-		//initialDeck.at(index) = temp;
-		//std::cout << temp->getFace() << "-" << temp->getSuit() << std::endl;
-		//temp = nullptr;
-	}
+	// uniformly-distributed integer random number generator
+	std::random_device rdSeed;
 	
-	std::cout << "Deck shuffled.\n\n";
-}
+	// random number engine based on Mersenne Twister algorithm
+	std::mt19937 rngGenerator(rdSeed());
 
-void DeckOfCards::fillQueueCards()
-{
-	for (int i = 0; i < initialDeck.size(); i++)
-	{
-		/*shuffledDeck.emplace(initialDeck.at(i).get());*/
-		/*shuffledDeck.push(initialDeck.at(i));*/
+	// shuffle vector deck
+	std::shuffle(initialDeck.begin(), initialDeck.end(), rngGenerator);
+	std::cout << "Initial deck shuffled.\n\n";
+
+	for (auto c : initialDeck) {
+		shuffledDeck.push(c);
 	}
+	initialDeck.clear();
 
-	std::cout << shuffledDeck.size() << std::endl;
-	std::cout << "Shuffled deck created.\n\n";
+	std::cout << "Cards queue filled.\n\n";
 }
-
 
 DeckOfCards::~DeckOfCards()
 {
-	//for (auto& c : initialDeck) {
-	//	delete c;
-	//	c = nullptr;
-	//}
-	//int queueSize = shuffledDeck.size();
-	//for (int i = 0; i < queueSize; i++)
-	//{
-	//	shuffledDeck.pop();
-	//}
+	std::cout << "DeckOfCards destructor called.\n\n";
+}
+
+std::queue<Card>& DeckOfCards::getDeck()
+{
+	return this->shuffledDeck;
 }

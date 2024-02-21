@@ -17,7 +17,7 @@ public:
 
 	static TextureManager* Instance()
 	{
-		if (instance == 0)
+		if (!instance)
 		{
 			instance = new TextureManager();
 			return instance;

@@ -3,6 +3,14 @@
 #include "TextureManager.h"
 #include <iostream>
 
+
+Game::Game()
+{
+	Game::window = NULL;
+	Game::renderer = NULL;
+	Game::running = true;
+}
+
 bool Game::init(const char* title, int xpos, int ypos, int width, int height, int flags)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
@@ -17,7 +25,7 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, in
 			if (renderer != 0) //renderer init success
 			{
 				std::cout << "renderer creation success\n";
-				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+				SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
 
 				// load background
 				TextureManager::Instance()->loadTexture("./assets/background.jpg",
@@ -25,13 +33,13 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, in
 					renderer);
 
 				// load all playing cards
-				for (int i = 0; i < 4; i++)
-				{
-					for (int j = 0; j < 14; j++)
-					{
-						// load texture cards
-					}
-				}
+				//for (int i = 0; i < 4; i++)
+				//{
+				//	for (int j = 0; j < 14; j++)
+				//	{
+				//		// load texture cards
+				//	}
+				//}
 			}
 			else
 			{
@@ -75,6 +83,13 @@ void Game::handleEvents()
 		switch (event.type)
 		{
 		case SDL_QUIT: running = false; break;
+		case SDL_KEYDOWN: {
+			if (event.key.keysym.sym == SDLK_SPACE)
+			{
+				createPlayers();
+				dealCardsToPlayers();
+			}
+		}; break;
 		default: break;
 
 		}
@@ -99,19 +114,50 @@ bool Game::isRunning()
 	return Game::running;
 }
 
-
-
-Game::Game()
+void Game::createPlayers()
 {
-	Game::window = NULL;
-	Game::renderer = NULL;
-	Game::running = true;
+	Player firstPlayer;
+	Player secondPlayer;
+	Player thirdPlayer;
+
+	players.push_back(firstPlayer);
+	players.push_back(secondPlayer);
+	players.push_back(thirdPlayer);
+}
+
+void Game::dealCardsToPlayers()
+{
+	for (int i = 0; i < 10; i++)
+	{
+		players.at(0).addCard(deck.getDeck().front());
+		deck.getDeck().pop();
+		players.at(1).addCard(deck.getDeck().front());
+		deck.getDeck().pop();
+		players.at(2).addCard(deck.getDeck().front());
+		deck.getDeck().pop();
+	}
+}
+
+void Game::putCardToTable()
+{
+
+}
+
+void Game::checkPlayersCards()
+{
+}
+
+Card Game::drawCard()
+{
+	Card c = deck.getDeck().front();
+	deck.getDeck().pop();
+	return c;
 }
 
 Game::~Game()
 {
 	delete window;
 	delete renderer;
-	//window = nullptr;
-	//renderer = nullptr;
+	window = nullptr;
+	renderer = nullptr;
 }
