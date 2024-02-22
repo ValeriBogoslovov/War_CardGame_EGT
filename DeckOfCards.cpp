@@ -53,7 +53,12 @@ DeckOfCards::~DeckOfCards()
 	std::cout << "DeckOfCards destructor called.\n\n";
 }
 
-std::queue<Card>& DeckOfCards::getDeck()
+std::queue<Card>& DeckOfCards::updateDeck()
+{
+	return this->shuffledDeck;
+}
+
+std::queue<Card> DeckOfCards::getDeck() const
 {
 	return this->shuffledDeck;
 }

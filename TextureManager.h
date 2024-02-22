@@ -13,6 +13,7 @@ public:
 	void drawTexture(std::string id,
 		SDL_Rect destRect,
 		SDL_Renderer* ren,
+		double angle = 0,
 		SDL_RendererFlip flip = SDL_FLIP_NONE);
 
 	static TextureManager* Instance()
@@ -31,7 +32,6 @@ private:
 	TextureManager() {}
 	std::map<std::string, SDL_Texture*> textureMap;
 	static TextureManager* instance;
-
 
 };
 

@@ -5,24 +5,20 @@
 class Player
 {
 public:
+	//setters, updaters
 	void addCard(Card c);
 	void setPlayerID(int id);
-
-	// get deck const
-	std::queue<Card> getPlayerDeck();
-
-	//update deck
+	void updateAtWar(bool isAtWar);
 	std::queue<Card>& updatePlayerDeck();
+
+	// getters
+	std::queue<Card> getPlayerDeck() const;
 	int getPlayerID() const;
-
-	//bool isPlaying = true;
-	//bool hasWonGame = false;
-	//bool hasWonWar = false;
-
-	bool isAtWar = false;
+	bool getAtWar()const;
 
 private:
 	std::queue<Card> playerDeck;
 	int playerID;
+	bool isAtWar = false;
 };
 

@@ -11,12 +11,9 @@ public:
 	void createPlayers();
 	void dealCardsToPlayers();
 	void putCardToTable();
-	void checkAndSetPlayerIfPlaying();
 
 	void printPlayersCardPowers();
 	void checkAndSetPlayersForWars();
-	void threePlayerWar();
-	void twoPlayerWar(int firstId, int secondID);
 
 	Card drawCard();
 

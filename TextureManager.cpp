@@ -29,9 +29,10 @@ bool TextureManager::loadTexture(const char* fileName,
 void TextureManager::drawTexture(std::string id,
 	SDL_Rect destRect,
 	SDL_Renderer* ren,
+	double angle,
 	SDL_RendererFlip flip)
 {
-	SDL_RenderCopyEx(ren, textureMap[id], NULL, &destRect, 0, 0, flip);
+	SDL_RenderCopyEx(ren, textureMap[id], NULL, &destRect, angle, 0, flip);
 }
 
 TextureManager::~TextureManager()

@@ -11,7 +11,17 @@ void Player::setPlayerID(int id)
     this->playerID = id;
 }
 
-std::queue<Card>& Player::getPlayerDeck()
+void Player::updateAtWar(bool isAtWar)
+{
+    this->isAtWar = isAtWar;
+}
+
+std::queue<Card> Player::getPlayerDeck() const
+{
+    return this->playerDeck;
+}
+
+std::queue<Card>& Player::updatePlayerDeck()
 {
     return this->playerDeck;
 }
@@ -19,4 +29,9 @@ std::queue<Card>& Player::getPlayerDeck()
 int Player::getPlayerID() const
 {
     return this->playerID;
+}
+
+bool Player::getAtWar() const
+{
+    return this->isAtWar;
 }

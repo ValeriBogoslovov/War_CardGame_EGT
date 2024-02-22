@@ -26,6 +26,16 @@ int Card::getPower() const
     return this->power;
 }
 
+int Card::getCardWidth()
+{
+    return this->cardWidth;
+}
+
+int Card::getCardHeight()
+{
+    return this->cardHeight;
+}
+
 Card::~Card()
 {
     //++destructorCount;

@@ -11,7 +11,8 @@ public:
 	DeckOfCards();
 	~DeckOfCards();
 
-	std::queue<Card>& getDeck();
+	std::queue<Card> getDeck() const;
+	std::queue<Card>& updateDeck();
 private:
 	std::queue<Card> shuffledDeck;
 	std::vector<Card> initialDeck;
