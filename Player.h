@@ -8,12 +8,17 @@ public:
 	void addCard(Card c);
 	void setPlayerID(int id);
 
-	std::queue<Card>& getPlayerDeck();
+	// get deck const
+	std::queue<Card> getPlayerDeck();
+
+	//update deck
+	std::queue<Card>& updatePlayerDeck();
 	int getPlayerID() const;
 
-	bool isPlaying = true;
-	bool hasWonGame = false;
-	bool hasWonWar = false;
+	//bool isPlaying = true;
+	//bool hasWonGame = false;
+	//bool hasWonWar = false;
+
 	bool isAtWar = false;
 
 private:
