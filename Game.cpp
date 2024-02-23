@@ -34,12 +34,13 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, in
 				loadTextures();
 				// initialize Players
 				createPlayers();
-				// populate players deck
-				dealCardsToPlayers();
+				
 				//set backround width and height
 				backgroundWidth = width;
 				backgroundHeight = height;
 				startXPos = (width / 2) - (startWidth / 2);
+				
+				state = Initial;
 			}
 			else
 			{
@@ -70,37 +71,196 @@ void Game::render()
 	SDL_GetWindowSize(window, &width, &height);
 
 	//Background Image upload
-	TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
 
-	TextureManager::Instance()->drawTexture("start_button", {startXPos, startYPos, startWidth, startHeight}, renderer);
+	if (state == Initial)
+	{
+		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
+		TextureManager::Instance()->drawTexture("start_button", { startXPos, startYPos, startWidth, startHeight }, renderer);
+		SDL_RenderPresent(renderer);
+		SDL_RenderClear(renderer);
 
-	drawPlayersDeck(hasGameStarted);
-	drawPlayersCardsUp(isPlayerOneDeckPressed, isPlayerTwoDeckPressed, isPlayerThreeDeckPressed);
-	
-	SDL_RenderPresent(renderer);
+	}
+	if (state == NormalPlay)
+	{
+		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
+
+		// draw decks
+		drawPlayersDeck();
+		drawPlayersCardsUp();
+		SDL_RenderPresent(renderer);
+		SDL_RenderClear(renderer);
+
+		checkPlayersCards();
+	}
+
+}
+
+
+void Game::update()
+{
+	if (mouseXDown > startXPos && mouseXDown < (startXPos + startWidth)
+		&& mouseYDown > startYPos && mouseYDown < (startYPos + startHeight)
+		&& state == Initial)
+	{
+		std::cout << "Start pressed" << std::endl;
+		// populate players deck
+		dealCardsToPlayers();
+		//change state
+		state = NormalPlay;
+	}
+	for (int i = 0; i < players.size(); i++)
+	{
+		if (mouseXDown > players.at(i).getPlayerBackCardPosX() 
+			&& mouseXDown < (players.at(i).getPlayerBackCardPosX() + emptyCard.getCardWidth())
+			&& mouseYDown > players.at(i).getPlayerBackCardPosY()
+			&& mouseYDown < (players.at(i).getPlayerBackCardPosY() + emptyCard.getCardHeight()))
+		{
+			players.at(i).playerState = Player::PlayerCardOpen;
+		}
+	}
+}
+
+void Game::drawPlayersDeck()
+{
+	for (int i = 0; i < players.size(); i++)
+	{
+		if (players.at(i).playerState == Player::PlayerReady)
+		{
+			TextureManager::Instance()->drawTexture(emptyCard.getID(), 
+				{ players.at(i).getPlayerBackCardPosX(), players.at(i).getPlayerBackCardPosY(),
+				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getCardAngle());
+
+		}
+	}
+}
+
+void Game::drawPlayersCardsUp()
+{
+	for (int i = 0; i < players.size(); i++)
+	{
+		if (players.at(i).playerState == Player::PlayerCardOpen)
+		{
+			// draw deck
+			TextureManager::Instance()->drawTexture(emptyCard.getID(),
+				{ players.at(i).getPlayerBackCardPosX(), players.at(i).getPlayerBackCardPosY(),
+				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getCardAngle());
+			// draw face up card
+			TextureManager::Instance()->drawTexture(players.at(i).getPlayerDeck().front().getID(),
+				{ players.at(i).getPlayerFaceUpCardPosX(), players.at(i).getPlayerFaceUpCardPosY(),
+				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer);
+		}
+	}
+}
+
+void Game::checkPlayersCards()
+{
+	int cardsOpen = 0;
+	for (int i = 0; i < players.size(); i++)
+	{
+		if (players.at(i).playerState == Player::PlayerCardOpen)
+		{
+			cardsOpen++;
+		}
+	}
+	if (cardsOpen == players.size())
+	{
+		comparePlayersCardsPower();
+	}
+}
+
+void Game::comparePlayersCardsPower()
+{
+	if (players.size() > 1)
+	{
+		/*int tempCardPower = players.at(0).getPlayerDeck().front().getPower();
+		players.at(0).getPlayerDeck().pop();
+		if (players.at(0).getPlayerDeck().size() > 0)
+		{
+			players.at(0).playerState = Player::PlayerReady;
+		}
+		int playerId = players.at(0).getPlayerID();*/
+		for (int i = 0; i < players.size() - 1; i++)
+		{
+			int tempCardPower = players.at(i).getPlayerDeck().front().getPower();
+			int playerId = players.at(i).getPlayerID();
+			if (tempCardPower < players.at(i + 1).getPlayerDeck().front().getPower())
+			{
+				tempCardPower = players.at(i + 1).getPlayerDeck().front().getPower();
+				playerId = players.at(i + 1).getPlayerID();
+				players.at(i + 1).getPlayerDeck().pop();
+			}
+			else if (tempCardPower > players.at(i + 1).getPlayerDeck().front().getPower())
+			{
+				players.at(i + 1).getPlayerDeck().pop();
+			}
+			else if (tempCardPower == players.at(i + 1).getPlayerDeck().front().getPower())
+			{
+				players.at(playerId).playerState = Player::PlayerAtWar;
+				players.at(i + 1).playerState = Player::PlayerAtWar;
+			}
+
+		}
+	}
+}
+
+
+void Game::dealCardsToPlayers()
+{
+	deck.createDeck();
+
+	for (int i = 0; i < 10; i++)
+	{
+		players.at(0).updatePlayerDeck().push(deck.getDeck().front());
+		deck.updateDeck().pop();
+		players.at(1).updatePlayerDeck().push(deck.getDeck().front());
+		deck.updateDeck().pop();
+		players.at(2).updatePlayerDeck().push(deck.getDeck().front());
+		deck.updateDeck().pop();
+	}
+
+	players.at(0).playerState = Player::PlayerReady;
+	players.at(1).playerState = Player::PlayerReady;
+	players.at(2).playerState = Player::PlayerReady;
+
+}
+
+void Game::createPlayers()
+{
+	Player firstPlayer;
+	Player secondPlayer;
+	Player thirdPlayer;
+
+	firstPlayer.setPlayerID(0);
+	firstPlayer.setCardAngle(90);
+	firstPlayer.setPlayerBackCardPosX(100);
+	firstPlayer.setPlayerBackCardPosY(250);
+	firstPlayer.setPlayerFaceUpCardPosX(450);
+	firstPlayer.setPlayerFaceUpCardPosY(250);
+
+	secondPlayer.setPlayerID(1);
+	secondPlayer.setCardAngle(0);
+	secondPlayer.setPlayerBackCardPosX(600);
+	secondPlayer.setPlayerBackCardPosY(500);
+	secondPlayer.setPlayerFaceUpCardPosX(600);
+	secondPlayer.setPlayerFaceUpCardPosY(250);
+
+	thirdPlayer.setPlayerID(2);
+	thirdPlayer.setCardAngle(90);
+	thirdPlayer.setPlayerBackCardPosX(1000);
+	thirdPlayer.setPlayerBackCardPosY(250);
+	thirdPlayer.setPlayerFaceUpCardPosX(750);
+	thirdPlayer.setPlayerFaceUpCardPosY(250);
+
+	players.push_back(firstPlayer);
+	players.push_back(secondPlayer);
+	players.push_back(thirdPlayer);
 }
 
 void Game::handleEvents()
 {
 	SDL_Event event;
-	if (SDL_WaitEvent(&event) != 0) {
-		switch (event.type) {
-		case SDL_QUIT:
-			running = false;
-			break;
-		case SDL_MOUSEBUTTONDOWN: {
-			int msx, msy;
-			if (event.button.button == SDL_BUTTON_LEFT)
-			{
-				SDL_GetMouseState(&msx, &msy);
-				mouseXDown = msx;
-				mouseYDown = msy;
-			}
 
-		}; break;
-		}
-	}
-	/*if (SDL_PollEvent(&event))
+	if (SDL_PollEvent(&event))
 	{
 		switch (event.type)
 		{
@@ -113,7 +273,7 @@ void Game::handleEvents()
 				mouseXDown = msx;
 				mouseYDown = msy;
 			}
-			
+
 		}; break;
 		case SDL_MOUSEBUTTONUP: {
 			int msx, msy;
@@ -123,119 +283,10 @@ void Game::handleEvents()
 				mouseXUp = msx;
 				mouseYUp = msy;
 			}
-			
+
 		}; break;
 		default: break;
 
-		}
-	}*/
-}
-
-void Game::update()
-{
-	std::cout << "Update" << std::endl;
-	if (mouseXDown > startXPos && mouseXDown < (startXPos + startWidth)
-		&& mouseYDown > startYPos && mouseYDown < (startYPos + startHeight))
-	{
-		hasGameStarted = true;
-	}
-	if (mouseXDown > player1DeckPosX && mouseXDown < (player1DeckPosX + emptyCard.getCardWidth())
-		&& mouseYDown > player1DeckPosY && mouseYDown < (player1DeckPosY + emptyCard.getCardHeight()))
-	{
-		isPlayerOneDeckPressed = true;
-	}
-	if (mouseXDown > player2DeckPosX && mouseXDown < (player2DeckPosX + emptyCard.getCardWidth())
-		&& mouseYDown > player2DeckPosY && mouseYDown < (player2DeckPosY + emptyCard.getCardHeight()))
-	{
-		isPlayerTwoDeckPressed = true;
-	}
-	if (mouseXDown > player3DeckPosX && mouseXDown < (player3DeckPosX + emptyCard.getCardWidth())
-		&& mouseYDown > player3DeckPosY && mouseYDown < (player3DeckPosY + emptyCard.getCardHeight()))
-	{
-		isPlayerThreeDeckPressed = true;
-	}
-}
-
-void Game::createPlayers()
-{
-	Player firstPlayer;
-	Player secondPlayer;
-	Player thirdPlayer;
-
-	firstPlayer.setPlayerID(0);
-	secondPlayer.setPlayerID(1);
-	thirdPlayer.setPlayerID(2);
-
-	players.push_back(firstPlayer);
-	players.push_back(secondPlayer);
-	players.push_back(thirdPlayer);
-}
-
-void Game::dealCardsToPlayers()
-{
-	for (int i = 0; i < 10; i++)
-	{
-		players.at(0).updatePlayerDeck().push(deck.getDeck().front());
-		deck.updateDeck().pop();
-		players.at(1).updatePlayerDeck().push(deck.getDeck().front());
-		deck.updateDeck().pop();
-		players.at(2).updatePlayerDeck().push(deck.getDeck().front());
-		deck.updateDeck().pop();
-	}
-	isPlayerOnePlaying = true;
-	isPlayerTwoPlaying = true;
-	isPlayerThreePlaying = true;
-}
-
-void Game::drawPlayersDeck(bool hasGameStarted)
-{
-	if (hasGameStarted)
-	{
-		TextureManager::Instance()->drawTexture(emptyCard.getID(), { player1DeckPosX, player1DeckPosY, emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, 90);
-		TextureManager::Instance()->drawTexture(emptyCard.getID(), { player3DeckPosX, player3DeckPosY, emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, 90);
-		TextureManager::Instance()->drawTexture(emptyCard.getID(), { player2DeckPosX, player2DeckPosY, emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, 0);
-	}
-}
-
-void Game::drawPlayersCardsUp(bool p1Pressed, bool p2Pressed, bool p3Pressed)
-{
-	if (p1Pressed)
-	{
-		if (players.at(0).getPlayerDeck().size() > 0)
-		{
-			TextureManager::Instance()->drawTexture(players.at(0).getPlayerDeck().front().getID(),
-				{ player1CardPosX, player1CardPosY, emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer);
-		}
-		else
-		{
-			isPlayerOnePlaying = false;
-		}
-		
-	}
-	
-	if (p2Pressed)
-	{
-		if (players.at(1).getPlayerDeck().size() > 0)
-		{
-			TextureManager::Instance()->drawTexture(players.at(1).getPlayerDeck().front().getID(),
-				{ player2CardPosX, player2CardPosY, emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer);
-		}
-		else
-		{
-			isPlayerTwoPlaying = false;
-		}
-	}
-
-	if (p3Pressed)
-	{
-		if (players.at(2).getPlayerDeck().size() > 0)
-		{
-			TextureManager::Instance()->drawTexture(players.at(2).getPlayerDeck().front().getID(),
-				{ player3CardPosX, player3CardPosY, emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer);
-		}
-		else
-		{
-			isPlayerThreePlaying = false;
 		}
 	}
 }
@@ -247,7 +298,7 @@ Card Game::pickCard()
 	return c;
 }
 
-std::vector<Player> Game::getPlayers() const
+const std::vector<Player>& Game::getPlayers()
 {
 	return this->players;
 }
@@ -257,12 +308,12 @@ std::vector<Player>& Game::updatePlayers()
 	return this->players;
 }
 
-std::queue<Card> Game::getDiscardedCards() const
+const std::vector<Card>& Game::getDiscardedCards()
 {
 	return this->discardedCards;
 }
 
-std::queue<Card>& Game::updateDiscardedCards()
+std::vector<Card>& Game::updateDiscardedCards()
 {
 	return this->discardedCards;
 }

@@ -4,16 +4,10 @@
 
 #include "DeckOfCards.h"
 
-DeckOfCards::DeckOfCards()
-{
-	createDeck();
-}
-
-
 void DeckOfCards::createDeck()
 {
 	const std::string suit[4] = { "Hearts", "Diamonds", "Clubs", "Spades" };
-
+	// clear queue
 	const std::string face[13] =
 	{ "Deuce", "Three", "Four",
 		"Five", "Six", "Seven", "Eight", "Nine",
@@ -46,11 +40,6 @@ void DeckOfCards::createDeck()
 	initialDeck.clear();
 
 	std::cout << "Cards queue filled.\n\n";
-}
-
-DeckOfCards::~DeckOfCards()
-{
-	std::cout << "DeckOfCards destructor called.\n\n";
 }
 
 std::queue<Card>& DeckOfCards::updateDeck()

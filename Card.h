@@ -20,7 +20,6 @@ private:
 	int power;
 	static int destructorCount;
 
-	int cardX, cardY;
 	int cardWidth = 100;
 	int cardHeight = 150;
 };

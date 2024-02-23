@@ -8,16 +8,12 @@
 class DeckOfCards
 {
 public:
-	DeckOfCards();
-	~DeckOfCards();
-
+	void createDeck();
 	std::queue<Card> getDeck() const;
 	std::queue<Card>& updateDeck();
 private:
 	std::queue<Card> shuffledDeck;
 	std::vector<Card> initialDeck;
-
-	void createDeck();
 
 };
 

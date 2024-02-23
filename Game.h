@@ -29,20 +29,24 @@ public:
 	void dealCardsToPlayers();
 
 	// draw players deck
-	void drawPlayersDeck(bool hasGameStarted);
+	void drawPlayersDeck();
 	// draw players cards face up
-	void drawPlayersCardsUp(bool p1Pressed, bool p2Pressed, bool p3Pressed);
+	void drawPlayersCardsUp();
+	// check if all active players have placed cards
+	void checkPlayersCards();
+	// compare players cards powers
+	void comparePlayersCardsPower();
 
 	bool isWar = false;
 	// draw card from rest of deck
 	Card pickCard();
 	// getter and setter for vector of Player
-	std::vector<Player> getPlayers()const;
+	const std::vector<Player>& getPlayers();
 	std::vector<Player>& updatePlayers();
 
-	// getter and setter for queue of discarded Card
-	std::queue<Card> getDiscardedCards()const;
-	std::queue<Card>& updateDiscardedCards();
+	// getter and setter for vector of discarded Card
+	const std::vector<Card>& getDiscardedCards();
+	std::vector<Card>& updateDiscardedCards();
 
 
 private:
@@ -53,8 +57,8 @@ private:
 	std::vector<Player> players;
 	// deck object containing shuffled queue of cards
 	DeckOfCards deck;
-	// queue of Card will be used when players put cards on table
-	std::queue<Card> discardedCards;
+	// vector of Card will be used when players put cards on table
+	std::vector<Card> discardedCards;
 	// empty Card used for xPos and yPos and width and height
 	Card emptyCard;
 	// load all images func, called in Init()
@@ -68,42 +72,14 @@ private:
 	const int startYPos = 50;
 	const int startWidth = 100;
 	const int startHeight = 50;
-	// players default deck position
-	const int player1DeckPosX = 100;
-	const int player1DeckPosY = 250;
-
-	const int player2DeckPosX = 600;
-	const int player2DeckPosY = 500;
-
-	const int player3DeckPosX = 1000;
-	const int player3DeckPosY = 250;
-
-	// players default card face up position
-	const int player1CardPosX = 450;
-	const int player1CardPosY = 250;
-
-	const int player2CardPosX = 600;
-	const int player2CardPosY = 250;
-
-	const int player3CardPosX = 750;
-	const int player3CardPosY = 250;
 
 	// mouse position
 	int mouseXUp, mouseXDown, mouseYUp, mouseYDown;
 
-	// bool if player deck is pressed
-	bool isPlayerOneDeckPressed = false;
-	bool isPlayerTwoDeckPressed = false;
-	bool isPlayerThreeDeckPressed = false;
-
-	// bool if playerIsPlaying
-	bool isPlayerOnePlaying = false;
-	bool isPlayerTwoPlaying = false;
-	bool isPlayerThreePlaying = false;
-
-	// bool if game has started
-	bool hasGameStarted = false;
-
-	// counter for how many players have put their cards on desk
-	int counter = 0;
+	enum GameState {
+		Initial,
+		NormalPlay,
+		Statistics
+	};
+	GameState state;
 };
