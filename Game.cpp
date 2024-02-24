@@ -32,8 +32,6 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, in
 
 				// load textures
 				loadTextures();
-				// initialize Players
-				createPlayers();
 				
 				//set backround width and height
 				backgroundWidth = width;
@@ -74,27 +72,41 @@ void Game::render()
 
 	if (state == Initial)
 	{
+		//SDL_RenderClear(renderer);
 		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
 		TextureManager::Instance()->drawTexture("start_button", { startXPos, startYPos, startWidth, startHeight }, renderer);
 		SDL_RenderPresent(renderer);
-		SDL_RenderClear(renderer);
+
 
 	}
-	if (state == NormalPlay)
+	else if (state == NormalPlay)
 	{
+		//SDL_RenderClear(renderer);
 		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
-
+		TextureManager::Instance()->drawTexture("start_button", { startXPos, startYPos, startWidth, startHeight }, renderer);
 		// draw decks
 		drawPlayersDeck();
 		drawPlayersCardsUp();
-		SDL_RenderPresent(renderer);
-		SDL_RenderClear(renderer);
 
-		checkPlayersCards();
+		SDL_RenderPresent(renderer);
+
+		checkIfActivePlayersPlacedCards();
+	}
+	else if (state == WarPlay)
+	{
+		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
+		TextureManager::Instance()->drawTexture("start_button", { startXPos, startYPos, startWidth, startHeight }, renderer);
+
+		drawPlayersDeck();
+		drawPlayersCardsUp();
+
+		SDL_RenderPresent(renderer);
+
+		checkIfActivePlayersPlacedCards();
+
 	}
 
 }
-
 
 void Game::update()
 {
@@ -103,61 +115,132 @@ void Game::update()
 		&& state == Initial)
 	{
 		std::cout << "Start pressed" << std::endl;
+		createPlayers();
 		// populate players deck
 		dealCardsToPlayers();
 		//change state
 		state = NormalPlay;
 	}
-	for (int i = 0; i < players.size(); i++)
+	if (state == NormalPlay)
 	{
-		if (mouseXDown > players.at(i).getPlayerBackCardPosX() 
-			&& mouseXDown < (players.at(i).getPlayerBackCardPosX() + emptyCard.getCardWidth())
-			&& mouseYDown > players.at(i).getPlayerBackCardPosY()
-			&& mouseYDown < (players.at(i).getPlayerBackCardPosY() + emptyCard.getCardHeight()))
+		for (int i = 0; i < players.size(); i++)
 		{
-			players.at(i).playerState = Player::PlayerCardOpen;
+			if (mouseXDown > players.at(i).getPlayerBackCardPosX()
+				&& mouseXDown < (players.at(i).getPlayerBackCardPosX() + emptyCard.getCardWidth())
+				&& mouseYDown > players.at(i).getPlayerBackCardPosY()
+				&& mouseYDown < (players.at(i).getPlayerBackCardPosY() + emptyCard.getCardHeight()))
+			{
+				//players.at(i).playerState = Player::PlayerCardOpen;
+				players.at(i).playerShowCard = true;
+				mouseXDown = 0;
+				mouseYDown = 0;
+			}
 		}
 	}
+	else if (state == WarPlay)
+	{
+		for (int i = 0; i < players.size(); i++)
+		{
+			if (mouseXDown > players.at(i).getPlayerBackCardPosX()
+				&& mouseXDown < (players.at(i).getPlayerBackCardPosX() + emptyCard.getCardWidth())
+				&& mouseYDown > players.at(i).getPlayerBackCardPosY()
+				&& mouseYDown < (players.at(i).getPlayerBackCardPosY() + emptyCard.getCardHeight())
+				&& players.at(i).playerAtWar)
+			{
+				//players.at(i).playerState = Player::PlayerCardOpen;
+				players.at(i).playerShowWarCard = true;
+				mouseXDown = 0;
+				mouseYDown = 0;
+			}
+		}
+	}
+	
 }
 
 void Game::drawPlayersDeck()
 {
 	for (int i = 0; i < players.size(); i++)
 	{
-		if (players.at(i).playerState == Player::PlayerReady)
+		if (players.at(i).playerReady)
 		{
 			TextureManager::Instance()->drawTexture(emptyCard.getID(), 
 				{ players.at(i).getPlayerBackCardPosX(), players.at(i).getPlayerBackCardPosY(),
 				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getCardAngle());
-
 		}
 	}
 }
 
 void Game::drawPlayersCardsUp()
 {
-	for (int i = 0; i < players.size(); i++)
+	if (state == NormalPlay)
 	{
-		if (players.at(i).playerState == Player::PlayerCardOpen)
+		for (int i = 0; i < players.size(); i++)
 		{
-			// draw deck
-			TextureManager::Instance()->drawTexture(emptyCard.getID(),
-				{ players.at(i).getPlayerBackCardPosX(), players.at(i).getPlayerBackCardPosY(),
-				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getCardAngle());
-			// draw face up card
-			TextureManager::Instance()->drawTexture(players.at(i).getPlayerDeck().front().getID(),
-				{ players.at(i).getPlayerFaceUpCardPosX(), players.at(i).getPlayerFaceUpCardPosY(),
-				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer);
+			if (players.at(i).playerShowCard)
+			{
+				// draw deck
+				TextureManager::Instance()->drawTexture(emptyCard.getID(),
+					{ players.at(i).getPlayerBackCardPosX(), players.at(i).getPlayerBackCardPosY(),
+					emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getCardAngle());
+				// draw face up card
+				TextureManager::Instance()->drawTexture(players.at(i).getPlayerDeck().front().getID(),
+					{ players.at(i).getPlayerFaceUpCardPosX(), players.at(i).getPlayerFaceUpCardPosY(),
+					emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer);
+			}
 		}
 	}
+	else if (state == WarPlay)
+	{
+		int lastElementId = 0;
+		if (discardedCards.size() % 2 == 0)
+		{
+			lastElementId = discardedCards.size() / 2;
+		}
+		else
+		{
+			lastElementId = (discardedCards.size() / 2) - 1;
+		}
+		for (int i = 0; i < players.size(); i++)
+		{
+			if (players.at(i).playerShowWarCard)
+			{
+				// draw deck
+				TextureManager::Instance()->drawTexture(emptyCard.getID(),
+					{ players.at(i).getPlayerBackCardPosX(), players.at(i).getPlayerBackCardPosY(),
+					emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getCardAngle());
+				// draw face up card
+				TextureManager::Instance()->drawTexture(players.at(i).getPlayerDeck().front().getID(),
+					{ players.at(i).getPlayerFaceUpCardPosX(), players.at(i).getPlayerFaceUpCardPosY(),
+					emptyCard.getCardWidth(), emptyCard.getCardHeight() },renderer);
+				++lastElementId;
+			}
+			else
+			{
+				// draw deck
+				TextureManager::Instance()->drawTexture(emptyCard.getID(),
+					{ players.at(i).getPlayerBackCardPosX(), players.at(i).getPlayerBackCardPosY(),
+					emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getCardAngle());
+				// draw face up card
+				TextureManager::Instance()->drawTexture(discardedCards.at(lastElementId).getID(),
+					{ players.at(i).getPlayerFaceUpCardPosX(), players.at(i).getPlayerFaceUpCardPosY(),
+					emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer);
+				++lastElementId;
+			}
+		}
+	}
+	
 }
 
-void Game::checkPlayersCards()
+void Game::checkIfActivePlayersPlacedCards()
 {
 	int cardsOpen = 0;
 	for (int i = 0; i < players.size(); i++)
 	{
-		if (players.at(i).playerState == Player::PlayerCardOpen)
+		if (players.at(i).playerShowCard)
+		{
+			cardsOpen++;
+		}
+		else if (players.at(i).playerShowWarCard || players.at(i).playerInactive)
 		{
 			cardsOpen++;
 		}
@@ -170,37 +253,136 @@ void Game::checkPlayersCards()
 
 void Game::comparePlayersCardsPower()
 {
-	if (players.size() > 1)
+	int highestCard = players.at(0).getPlayerDeck().front().getPower();
+	int playerId = players.at(0).getPlayerID();
+	for (int i = 1; i < players.size(); i++)
 	{
-		/*int tempCardPower = players.at(0).getPlayerDeck().front().getPower();
-		players.at(0).getPlayerDeck().pop();
-		if (players.at(0).getPlayerDeck().size() > 0)
+		int currentCard = players.at(i).getPlayerDeck().front().getPower();
+		if (highestCard < currentCard)
 		{
-			players.at(0).playerState = Player::PlayerReady;
-		}
-		int playerId = players.at(0).getPlayerID();*/
-		for (int i = 0; i < players.size() - 1; i++)
-		{
-			int tempCardPower = players.at(i).getPlayerDeck().front().getPower();
-			int playerId = players.at(i).getPlayerID();
-			if (tempCardPower < players.at(i + 1).getPlayerDeck().front().getPower())
-			{
-				tempCardPower = players.at(i + 1).getPlayerDeck().front().getPower();
-				playerId = players.at(i + 1).getPlayerID();
-				players.at(i + 1).getPlayerDeck().pop();
-			}
-			else if (tempCardPower > players.at(i + 1).getPlayerDeck().front().getPower())
-			{
-				players.at(i + 1).getPlayerDeck().pop();
-			}
-			else if (tempCardPower == players.at(i + 1).getPlayerDeck().front().getPower())
-			{
-				players.at(playerId).playerState = Player::PlayerAtWar;
-				players.at(i + 1).playerState = Player::PlayerAtWar;
-			}
+			highestCard = currentCard;
+			playerId = players.at(i).getPlayerID();
+			players.at(i - 1).playerLostBattle = true;
+			players.at(i - 1).playerAtWar = false;
 
+			players.at(playerId).playerWonBattle = true;
+		}
+		else if (highestCard > currentCard)
+		{
+			players.at(i).playerLostBattle = true;
+			players.at(playerId).playerWonBattle = true;
+		}
+		else if (highestCard == currentCard)
+		{
+			players.at(playerId).playerAtWar = true;
+			players.at(playerId).playerWonBattle = false;
+			players.at(i).playerAtWar = true;
+		}
+		
+	}
+	updatePlayersDecks();
+}
+
+void Game::updatePlayersDecks()
+{
+	// counter for winner
+	int playerWonCounter = 0;
+	// winner player Id
+	int playerId = -1;
+	// for loop for checking if someone won
+	for (int i = 0; i < players.size(); i++)
+	{
+		// if playerWonBattle returns true increment winner count and get Id
+		if (players.at(i).playerWonBattle)
+		{
+			playerWonCounter++;
+			playerId = players.at(i).getPlayerID();
 		}
 	}
+	// 
+	if (playerWonCounter > 0)
+	{
+		//TO DO
+		// statistics set winner battle points
+		for (int i = 0; i < players.size(); i++)
+		{
+			if (players.at(i).playerAtWar)
+			{
+				continue;
+				players.at(i).playerShowWarCard = false;
+			}
+			discardedCards.push_back(players.at(i).getPlayerDeck().front());
+			players.at(i).updatePlayerDeck().pop();
+
+			players.at(i).playerWonBattle = false;
+			players.at(i).playerAtWar = false;
+			players.at(i).playerLostBattle = false;
+			players.at(i).playerShowCard = false;
+			players.at(i).playerInactive = false;
+
+		}
+		for (int i = 0; i < discardedCards.size(); i++)
+		{
+			players.at(playerId).updatePlayerDeck().push(discardedCards.at(i));
+		}
+		discardedCards.clear();
+		
+		//erase players if they have zero cards in deck
+		// using lambda expression
+		players.erase(std::remove_if(players.begin(), players.end(), [](Player& player) { return player.getPlayerDeck().size() == 0; }), players.end());
+		if (players.size() == 1)
+		{
+			state = Initial;
+		}
+		else
+		{
+			state = NormalPlay;
+		}
+	}
+	else
+	{
+		for (int i = 0; i < players.size(); i++)
+		{
+			if (players.at(i).playerAtWar)
+			{
+				players.at(i).playerWonBattle = false;
+				players.at(i).playerLostBattle = false;
+				players.at(i).playerShowCard = false;
+				players.at(i).playerShowWarCard = false;
+				players.at(i).playerInactive = false;
+				discardedCards.push_back(players.at(i).getPlayerDeck().front());
+				players.at(i).updatePlayerDeck().pop();
+				if (players.at(i).getPlayerDeck().size() == 0)
+				{
+					Card c = pickCard();
+					if (c.getPower() != 0)
+					{
+						players.at(i).updatePlayerDeck().push(c);
+					}
+				}
+			}
+			else
+			{
+				players.at(i).playerInactive = true;
+				players.at(i).playerShowCard = false;
+				players.at(i).playerShowWarCard = false;
+				players.at(i).playerWonBattle = false;
+				players.at(i).playerLostBattle = false;
+			}
+		}
+		//erase players if they have zero cards in deck
+		// using lambda expression
+		players.erase(std::remove_if(players.begin(), players.end(), [](Player& player) { return player.getPlayerDeck().size() == 0; }), players.end());
+		if (players.size() == 1)
+		{
+			state = Initial;
+		}
+		else
+		{
+			state = WarPlay;
+		}
+	}
+
 }
 
 
@@ -208,24 +390,30 @@ void Game::dealCardsToPlayers()
 {
 	deck.createDeck();
 
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 3; i++)
 	{
-		players.at(0).updatePlayerDeck().push(deck.getDeck().front());
+		players.at(0).updatePlayerDeck().push(Card(std::to_string(i+2), "Hearts", std::to_string(i), i+2));
 		deck.updateDeck().pop();
-		players.at(1).updatePlayerDeck().push(deck.getDeck().front());
+		players.at(1).updatePlayerDeck().push(Card(std::to_string(i+2), "Hearts", std::to_string(i + 13), i+2));
 		deck.updateDeck().pop();
-		players.at(2).updatePlayerDeck().push(deck.getDeck().front());
+		players.at(2).updatePlayerDeck().push(Card(std::to_string(i+2), "Hearts", std::to_string(i + 26), i+2));
 		deck.updateDeck().pop();
 	}
-
-	players.at(0).playerState = Player::PlayerReady;
-	players.at(1).playerState = Player::PlayerReady;
-	players.at(2).playerState = Player::PlayerReady;
+	//players.at(0).updatePlayerDeck().push(Card("2", "Clubs", "0", 2));
+	//players.at(1).updatePlayerDeck().push(Card("3", "Diamonds", "14", 3));
+	//players.at(2).updatePlayerDeck().push(Card("3", "Hearts", "27", 3));
+	players.at(0).playerReady = true;
+	players.at(1).playerReady = true;
+	players.at(2).playerReady = true;
 
 }
 
 void Game::createPlayers()
 {
+	if (players.size() > 0)
+	{
+		players.clear();
+	}
 	Player firstPlayer;
 	Player secondPlayer;
 	Player thirdPlayer;
@@ -254,6 +442,15 @@ void Game::createPlayers()
 	players.push_back(firstPlayer);
 	players.push_back(secondPlayer);
 	players.push_back(thirdPlayer);
+	for (int i = 0; i < players.size(); i++)
+	{
+		players.at(i).playerAtWar = false;
+		players.at(i).playerInactive = false;
+		players.at(i).playerReady = false;
+		players.at(i).playerLostBattle = false;
+		players.at(i).playerWonBattle = false;
+		players.at(i).playerShowCard = false;
+	}
 }
 
 void Game::handleEvents()
@@ -293,8 +490,13 @@ void Game::handleEvents()
 
 Card Game::pickCard()
 {
-	Card c = deck.getDeck().front();
-	deck.getDeck().pop();
+	Card c;
+	if (deck.getDeck().size() > 0)
+	{
+		Card c = deck.getDeck().front();
+		deck.updateDeck().pop();
+		return c;
+	}
 	return c;
 }
 

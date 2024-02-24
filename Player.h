@@ -26,14 +26,22 @@ public:
 	int getPlayerFaceUpCardPosX()const;
 	int getPlayerFaceUpCardPosY()const;
 
-	enum PlayerState {
-		PlayerReady,
-		PlayerCardOpen,
-		PlayerAtWar,
-		Inactive,
-		Finished
-	};
-	PlayerState playerState;
+	bool playerReady = false;
+	bool playerShowCard = false;
+	bool playerShowWarCard = false;
+	bool playerAtWar = false;
+	bool playerInactive = false;
+	bool playerWonBattle = false;
+	bool playerLostBattle = false;
+
+	//enum PlayerState {
+	//	PlayerReady,
+	//	PlayerCardOpen,
+	//	PlayerAtWar,
+	//	Inactive,
+	//	Finished
+	//};
+	//PlayerState playerState;
 	
 private:
 	std::queue<Card> playerDeck;

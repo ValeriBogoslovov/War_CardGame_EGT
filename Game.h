@@ -33,9 +33,11 @@ public:
 	// draw players cards face up
 	void drawPlayersCardsUp();
 	// check if all active players have placed cards
-	void checkPlayersCards();
+	void checkIfActivePlayersPlacedCards();
 	// compare players cards powers
 	void comparePlayersCardsPower();
+	// update players decks based on winner of war
+	void updatePlayersDecks();
 
 	bool isWar = false;
 	// draw card from rest of deck
@@ -79,6 +81,7 @@ private:
 	enum GameState {
 		Initial,
 		NormalPlay,
+		WarPlay,
 		Statistics
 	};
 	GameState state;
