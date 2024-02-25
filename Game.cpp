@@ -75,12 +75,14 @@ void Game::render()
 
 	if (state == Initial)
 	{
+
 		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
 		TextureManager::Instance()->drawTexture("start_button", { gameButton.getXPos(),gameButton.getYPos(), gameButton.getWidth(),gameButton.getHeight()}, renderer);
 		SDL_RenderPresent(renderer);
 	}
 	else if (state == NormalPlay)
 	{
+
 		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
 		TextureManager::Instance()->drawTexture("start_inactive", { gameButton.getXPos(),gameButton.getYPos(), gameButton.getWidth(),gameButton.getHeight() }, renderer);
 
@@ -94,8 +96,8 @@ void Game::render()
 			// update players deck after comparison
 			updatePlayersDecks();
 		}
-		SDL_RenderPresent(renderer);
 		
+		SDL_RenderPresent(renderer);
 	}
 
 }
@@ -107,8 +109,11 @@ void Game::update()
 		&& mouseYDown > gameButton.getYPos() && mouseYDown < (gameButton.getYPos() + gameButton.getHeight())
 		&& state == Initial)
 	{
+		SoundManager::Instance()->playBackgroundMusic("start", 0);
+		SDL_Delay(1200);
+		SoundManager::Instance()->playBackgroundMusic("music", 0);
+
 		std::cout << "Start pressed" << std::endl;
-		//SoundManager::Instance()->playBackgroundMusic("music", -1);
 		createPlayers();
 		// populate players deck
 		dealCardsToPlayers();
@@ -119,7 +124,6 @@ void Game::update()
 	{
 		for (int i = 0; i < players.size(); i++)
 		{
-			
 			// check if mouse is pressed on player button and the state of the player is Ready
 			if (mouseXDown > players.at(i).getPlayerButton().getXPos()
 				&& mouseXDown < (players.at(i).getPlayerButton().getXPos() + players.at(i).getPlayerButton().getWidth())
@@ -156,8 +160,19 @@ void Game::drawPlayersDeck()
 		players.at(i).cardCounter(renderer);
 		if (players.at(i).playerState == Player::PlayerReady || players.at(i).playerState == Player::Inactive)
 		{
-			std::string buttonId = "player_";
-			buttonId.append(std::to_string(players.at(i).getPlayerID() + 1));
+			if (players.at(i).playerState == Player::Inactive)
+			{
+				std::string buttonId = "player_";
+				buttonId.append(std::to_string(players.at(i).getPlayerID() + 1)).append("_inactive");
+				players.at(i).updatePlayerButton().updateId(buttonId);
+			}
+			else
+			{
+				std::string buttonId = "player_";
+				buttonId.append(std::to_string(players.at(i).getPlayerID() + 1));
+				players.at(i).updatePlayerButton().updateId(buttonId);
+			}
+
 			TextureManager::Instance()->drawTexture(emptyCard.getID(),
 				{ players.at(i).getPlayerCard().getBackCardXPos(), players.at(i).getPlayerCard().getBackCardYPos(),
 				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getPlayerCard().getCardAngle());
@@ -165,6 +180,7 @@ void Game::drawPlayersDeck()
 			TextureManager::Instance()->drawTexture(players.at(i).getPlayerButton().getId(),
 				{ players.at(i).getPlayerButton().getXPos(), players.at(i).getPlayerButton().getYPos(),
 				players.at(i).getPlayerButton().getWidth(), players.at(i).getPlayerButton().getHeight()}, renderer);
+			showWinnerOfBattle(renderer);
 		}
 		if ((players.at(i).getAtWar() && players.at(i).playerState != Player::Inactive)
 			|| players.at(i).playerState == Player::PlayerCardOpen)
@@ -257,8 +273,10 @@ void Game::updatePlayersDecks()
 		if (players.at(i).playerState == Player::WonBattle)
 		{
 			// get winner, update points of battle
+			
 			playerId = players.at(i).getPlayerID();
 			std::cout << "Player: " << playerId + 1 << " wins" << std::endl;
+			players.at(i).hasWon = true;
 			for (int i = 0; i < discardedCards.size(); i++)
 			{
 				players.at(playerId).updatePlayerDeck().push(discardedCards.at(i));
@@ -306,6 +324,41 @@ void Game::updatePlayersDecks()
 
 }
 
+bool Game::showWinnerOfBattle(SDL_Renderer* ren)
+{
+	if (TTF_Init() == -1) // return error
+	{
+		std::cout << SDL_GetError() << std::endl;
+		return false;
+	}
+	font = TTF_OpenFont("./assets/segoepr.ttf", 30);
+
+	SDL_Surface* tempSurfaceText = NULL;
+	for (int i = 0; i < players.size(); i++)
+	{
+		if (players.at(i).hasWon)
+		{
+			tempSurfaceText = TTF_RenderText_Blended(font, "The Winner is Player ", { 255,255,255,255 }); 
+			playerNameText = SDL_CreateTextureFromSurface(ren, tempSurfaceText);
+			tempSurfaceText = TTF_RenderText_Blended(font, std::to_string(i + 1).data(), {255,255,255,255});
+			playerPointsText = SDL_CreateTextureFromSurface(ren, tempSurfaceText);
+			int tw, th;
+			SDL_QueryTexture(playerNameText, 0, 0, &tw, &th);
+			SDL_QueryTexture(playerPointsText, 0, 0, &tw, &th);
+			players.at(i).hasWon = false;
+		}
+	}
+
+	playerNameTextDestRect = { 520,150,200,65 };
+	playerPointsTextDestRect = { 720,150,30,65 };
+
+	SDL_RenderCopy(ren, playerNameText, NULL, &this->playerNameTextDestRect);
+	SDL_RenderCopy(ren, playerPointsText, NULL, &this->playerPointsTextDestRect);
+
+	SDL_FreeSurface(tempSurfaceText);
+	return true;
+}
+
 void Game::dealCardsToPlayers()
 {
 	deck.createDeck();
@@ -332,19 +385,19 @@ void Game::createPlayers()
 	{
 		players.clear();
 	}
-
+	// create players with their deck position and buttons
 	Player firstPlayer(0, 100,250,450,250, 90.0, 90, 380, 120, 35, "player_1");
 	Player secondPlayer(1, 600, 500, 600, 250, 0, 590, 655, 120, 35, "player_2");
 	Player thirdPlayer(2, 1000, 250, 750, 250, 90.0, 990, 380, 120, 35, "player_3");
 
 	firstPlayer.updateCardText(90, 220, 100, 45);
-	firstPlayer.updateCardCounter(180, 220, 35, 45);
+	firstPlayer.updateCardCounter(180, 220, 30, 45);
 
 	secondPlayer.updateCardText(600, 450, 100, 45);
-	secondPlayer.updateCardCounter(690, 450, 35, 45);
+	secondPlayer.updateCardCounter(690, 450, 30, 45);
 
 	thirdPlayer.updateCardText(990, 220, 100, 45);
-	thirdPlayer.updateCardCounter(1080, 220, 35, 45);
+	thirdPlayer.updateCardCounter(1080, 220, 30, 45);
 
 
 	players.push_back(firstPlayer);
@@ -426,6 +479,7 @@ std::vector<Card>& Game::updateDiscardedCards()
 
 void Game::loadTexturesAndSounds()
 {
+	// load assets
 	TextureManager::Instance()->loadTexture("./assets/background.jpg",
 		"background",
 		renderer);
@@ -468,7 +522,9 @@ void Game::loadTexturesAndSounds()
 		"card_counter",
 		renderer);
 
-	SoundManager::Instance()->loadMusicAndSFX("./assets/music.mp3", "music", 1);
+	SoundManager::Instance()->loadMusicAndSFX("./assets/start.wav", "start", 1);
+
+	SoundManager::Instance()->loadMusicAndSFX("./assets/cool-jazz.mp3", "music", 1);
 
 	SoundManager::Instance()->loadMusicAndSFX("./assets/card-deal1.ogg", "sfx1", 0);
 

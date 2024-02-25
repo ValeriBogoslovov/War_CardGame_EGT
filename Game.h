@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "DeckOfCards.h"
 #include "SoundManager.h"
+#include "Statistics.h"
 
 class Game
 {
@@ -36,7 +37,8 @@ public:
 	void comparePlayersCardsPower();
 	// update players decks based on winner of war
 	void updatePlayersDecks();
-
+	// display player that wins
+	bool showWinnerOfBattle(SDL_Renderer* ren);
 	// draw card from rest of deck
 	Card pickCard();
 	// getter and setter for vector of Player
@@ -67,7 +69,11 @@ private:
 	int backgroundHeight;
 
 	Button gameButton;
-
+	TTF_Font* font;
+	SDL_Texture* playerNameText;
+	SDL_Texture* playerPointsText;
+	SDL_Rect playerNameTextDestRect;
+	SDL_Rect playerPointsTextDestRect;
 	// mouse position
 	int mouseXUp, mouseXDown, mouseYUp, mouseYDown;
 

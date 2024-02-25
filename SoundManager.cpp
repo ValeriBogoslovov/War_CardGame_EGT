@@ -9,11 +9,6 @@ SoundManager::SoundManager()
     }
 }
 
-SoundManager::~SoundManager()
-{
-    std::cout << "Destructor of SoundManager is called" << std::endl;
-}
-
 bool SoundManager::loadMusicAndSFX(const char* fileName,
     std::string id, int type)
 {
@@ -63,4 +58,11 @@ void SoundManager::playSFX(std::string id,
     }
 }
 
-SoundManager* SoundManager::s_mInstance = 0;
+SoundManager::~SoundManager()
+{
+    delete instance;
+    instance = nullptr;
+    std::cout << "Destructor of SoundManager is called" << std::endl;
+}
+
+SoundManager* SoundManager::instance = nullptr;

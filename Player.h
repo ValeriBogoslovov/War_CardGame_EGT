@@ -31,7 +31,7 @@ public:
 	Button getPlayerButton();
 	SDL_Rect getCardText() const;
 	SDL_Rect getCardCounter() const;
-
+	bool hasWon = false;
 	enum PlayerState {
 		PlayerReady,
 		PlayerCardOpen,

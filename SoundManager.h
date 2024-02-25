@@ -14,15 +14,15 @@ public:
 
 	static SoundManager* Instance()
 	{
-		if (s_mInstance == 0)
+		if (!instance)
 		{
-			s_mInstance = new SoundManager();
-			return s_mInstance;
+			instance = new SoundManager();
+			return instance;
 		}
-		return s_mInstance;
+		return instance;
 	}
 private:
-	static SoundManager* s_mInstance;
+	static SoundManager* instance;
 	std::map<std::string, Mix_Chunk*> s_mSfxs;
 	std::map<std::string, Mix_Music*> s_mMusic;
 
