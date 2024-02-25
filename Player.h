@@ -11,26 +11,29 @@ public:
 	void addCard(Card c);
 	void setPlayerID(int id);
 	void updateAtWar(bool isAtWar);
-	void setCardAngle(double angle);
-	void setPlayerBackCardPosX(int posX);
-	void setPlayerBackCardPosY(int posY);
-	void setPlayerFaceUpCardPosX(int posX);
-	void setPlayerFaceUpCardPosY(int posY);
+	//void setCardAngle(double angle);
+	//void setPlayerBackCardPosX(int posX);
+	//void setPlayerBackCardPosY(int posY);
+	//void setPlayerFaceUpCardPosX(int posX);
+	//void setPlayerFaceUpCardPosY(int posY);
 	std::queue<Card>& updatePlayerDeck();
 	std::stack<Card>& updatePlayerDiscardedDeck();
+	Card& setPlayerCard();
 
 	// getters
 	std::queue<Card> getPlayerDeck() const;
 	std::stack<Card> getPlayerDiscardedDeck() const;
 	int getPlayerID() const;
 	bool getAtWar()const;
-	double getCardAngle()const;
-	int getPlayerBackCardPosX()const;
-	int getPlayerBackCardPosY()const;
-	int getPlayerFaceUpCardPosX()const;
-	int getPlayerFaceUpCardPosY()const;
+	//double getCardAngle()const;
+	//int getPlayerBackCardPosX()const;
+	//int getPlayerBackCardPosY()const;
+	//int getPlayerFaceUpCardPosX()const;
+	//int getPlayerFaceUpCardPosY()const;
+	Card getPlayerCard();
 
-	bool playerAtWar = false;
+
+	//bool playerAtWar = false;
 
 	enum PlayerState {
 		PlayerReady,
@@ -45,13 +48,13 @@ private:
 	std::queue<Card> playerDeck;
 	std::stack<Card> playerDiscardedCards;
 	int playerID;
-	double playerCardAngle;
+	//double playerCardAngle;
 	bool isAtWar = false;
-
+	Card playerCard;
 	// player back and face up card position x and y
-	int playerBackCardPosX;
-	int playerBackCardPosY;
-	int playerFaceCardPosX;
-	int playerFaceCardPosY;
+	//int playerBackCardPosX;
+	//int playerBackCardPosY;
+	//int playerFaceCardPosX;
+	//int playerFaceCardPosY;
 };
 

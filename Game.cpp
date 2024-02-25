@@ -63,7 +63,9 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, in
 
 void Game::render()
 {
+	SDL_Delay(100);
 	SDL_RenderClear(renderer);
+	
 	int width, height;
 	SDL_GetWindowSize(window, &width, &height);
 
@@ -72,19 +74,23 @@ void Game::render()
 		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
 		TextureManager::Instance()->drawTexture("start_button", { startXPos, startYPos, startWidth, startHeight }, renderer);
 		SDL_RenderPresent(renderer);
-
-
 	}
 	else if (state == NormalPlay)
 	{
 		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
-		TextureManager::Instance()->drawTexture("start_button", { startXPos, startYPos, startWidth, startHeight }, renderer);
+		TextureManager::Instance()->drawTexture("start_inactive", { startXPos, startYPos, startWidth, startHeight }, renderer);
 
 		// draw decks
 		drawPlayersDeck();
 		// check placed cards of Active players
+		if (checkIfActivePlayersPlacedCards())
+		{
+			// compare power of players cards
+			comparePlayersCardsPower();
+			// update players deck after comparison
+			updatePlayersDecks();
+		}
 		SDL_RenderPresent(renderer);
-		checkIfActivePlayersPlacedCards();
 		
 	}
 
@@ -107,10 +113,10 @@ void Game::update()
 	{
 		for (int i = 0; i < players.size(); i++)
 		{
-			if (mouseXDown > players.at(i).getPlayerBackCardPosX()
-				&& mouseXDown < (players.at(i).getPlayerBackCardPosX() + emptyCard.getCardWidth())
-				&& mouseYDown > players.at(i).getPlayerBackCardPosY()
-				&& mouseYDown < (players.at(i).getPlayerBackCardPosY() + emptyCard.getCardHeight())
+			if (mouseXDown > players.at(i).getPlayerCard().getBackCardXPos()
+				&& mouseXDown < (players.at(i).getPlayerCard().getBackCardXPos() + players.at(i).getPlayerCard().getCardWidth())
+				&& mouseYDown > players.at(i).getPlayerCard().getBackCardYPos()
+				&& mouseYDown < (players.at(i).getPlayerCard().getBackCardYPos() + players.at(i).getPlayerCard().getCardHeight())
 				&& players.at(i).playerState == Player::PlayerReady)
 			{
 				players.at(i).playerState = Player::PlayerCardOpen;
@@ -131,25 +137,25 @@ void Game::drawPlayersDeck()
 		if (players.at(i).playerState == Player::PlayerReady || players.at(i).playerState == Player::Inactive)
 		{
 			TextureManager::Instance()->drawTexture(emptyCard.getID(),
-				{ players.at(i).getPlayerBackCardPosX(), players.at(i).getPlayerBackCardPosY(),
-				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getCardAngle());
+				{ players.at(i).getPlayerCard().getBackCardXPos(), players.at(i).getPlayerCard().getBackCardYPos(),
+				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getPlayerCard().getCardAngle());
 		}
-		if ((players.at(i).playerAtWar && players.at(i).playerState != Player::Inactive)
+		if ((players.at(i).getAtWar() && players.at(i).playerState != Player::Inactive)
 			|| players.at(i).playerState == Player::PlayerCardOpen)
 		{
 			TextureManager::Instance()->drawTexture(emptyCard.getID(),
-				{ players.at(i).getPlayerBackCardPosX(), players.at(i).getPlayerBackCardPosY(),
-				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getCardAngle());
+				{ players.at(i).getPlayerCard().getBackCardXPos(), players.at(i).getPlayerCard().getBackCardYPos(),
+				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getPlayerCard().getCardAngle());
 
 			TextureManager::Instance()->drawTexture(players.at(i).getPlayerDiscardedDeck().top().getID(),
-				{ players.at(i).getPlayerFaceUpCardPosX(), players.at(i).getPlayerFaceUpCardPosY(),
+				{ players.at(i).getPlayerCard().getFaceCardXPos(), players.at(i).getPlayerCard().getFaceCardYPos(),
 				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer);
 			
 		}
 	}
 }
 
-void Game::checkIfActivePlayersPlacedCards()
+bool Game::checkIfActivePlayersPlacedCards()
 {
 	int cardsOpen = 0;
 	for (int i = 0; i < players.size(); i++)
@@ -161,16 +167,19 @@ void Game::checkIfActivePlayersPlacedCards()
 	}
 	if (cardsOpen == players.size())
 	{
-		comparePlayersCardsPower();
+		return true;
 	}
+	return false;
 }
 
 void Game::comparePlayersCardsPower()
 {
+	// get previous and current card and player Id
 	int previousCard = 0;
 	int previousPlayerId = 0;
 	int currentCard = 0;
 	int currentCardPlayerId = -1;
+
 	for (int i = 0; i < players.size(); i++)
 	{
 		
@@ -192,22 +201,18 @@ void Game::comparePlayersCardsPower()
 		else if (previousCard > currentCard)
 		{
 			players.at(currentCardPlayerId).playerState = Player::Inactive;
-			players.at(currentCardPlayerId).playerAtWar = false;
-			/*if (!players.at(playerId).playerAtWar)
-			{
-				players.at(playerId).playerState = Player::WonBattle;
-			}*/
+			players.at(currentCardPlayerId).updateAtWar(false);
+
 		}
 		else if (previousCard == currentCard)
 		{
-			players.at(currentCardPlayerId).playerAtWar = true;
+			players.at(currentCardPlayerId).updateAtWar(true);
 			players.at(currentCardPlayerId).playerState = Player::PlayerReady;
-			players.at(previousPlayerId).playerAtWar = true;
+			players.at(previousPlayerId).updateAtWar(true);
 			players.at(previousPlayerId).playerState = Player::PlayerReady;
 		}
 
 	}
-	updatePlayersDecks();
 }
 
 void Game::updatePlayersDecks()
@@ -232,11 +237,11 @@ void Game::updatePlayersDecks()
 			for (int i = 0; i < players.size(); i++)
 			{
 				players.at(i).playerState = Player::PlayerReady;
-				players.at(i).playerAtWar = false;
+				players.at(i).updateAtWar(false);
 			}
 			break;
 		}
-		else if (players.at(i).playerAtWar)
+		else if (players.at(i).getAtWar())
 		{
 			playersAtWarCounter++;
 		}
@@ -245,7 +250,7 @@ void Game::updatePlayersDecks()
 	{
 		for (int i = 0; i < players.size(); i++)
 		{
-			if (players.at(i).playerAtWar 
+			if (players.at(i).getAtWar()
 				&& players.at(i).getPlayerDeck().size() == 0 
 				&& players.at(i).playerState != Player::Inactive)
 			{
@@ -265,6 +270,7 @@ void Game::updatePlayersDecks()
 	if (players.size() == 1)
 	{
 		// We have a winner, get winner, set points
+		std::cout << "Player " << players.at(0).getPlayerID() + 1 << " WINS THE GAME!" << std::endl;
 		state = Initial;
 	}
 
@@ -301,32 +307,31 @@ void Game::createPlayers()
 	Player thirdPlayer;
 
 	firstPlayer.setPlayerID(0);
-	firstPlayer.setCardAngle(90);
-	firstPlayer.setPlayerBackCardPosX(100);
-	firstPlayer.setPlayerBackCardPosY(250);
-	firstPlayer.setPlayerFaceUpCardPosX(450);
-	firstPlayer.setPlayerFaceUpCardPosY(250);
+	firstPlayer.setPlayerCard().setCardAngle(90);
+	firstPlayer.setPlayerCard().setBackCardXPos(100);
+	firstPlayer.setPlayerCard().setBackCardYPos(250);
+	firstPlayer.setPlayerCard().setFaceCardXPos(450);
+	firstPlayer.setPlayerCard().setFaceCardYPos(250);
 
 	secondPlayer.setPlayerID(1);
-	secondPlayer.setCardAngle(0);
-	secondPlayer.setPlayerBackCardPosX(600);
-	secondPlayer.setPlayerBackCardPosY(500);
-	secondPlayer.setPlayerFaceUpCardPosX(600);
-	secondPlayer.setPlayerFaceUpCardPosY(250);
+	secondPlayer.setPlayerCard().setCardAngle(0);
+	secondPlayer.setPlayerCard().setBackCardXPos(600);
+	secondPlayer.setPlayerCard().setBackCardYPos(500);
+	secondPlayer.setPlayerCard().setFaceCardXPos(600);
+	secondPlayer.setPlayerCard().setFaceCardYPos(250);
 
 	thirdPlayer.setPlayerID(2);
-	thirdPlayer.setCardAngle(90);
-	thirdPlayer.setPlayerBackCardPosX(1000);
-	thirdPlayer.setPlayerBackCardPosY(250);
-	thirdPlayer.setPlayerFaceUpCardPosX(750);
-	thirdPlayer.setPlayerFaceUpCardPosY(250);
+	thirdPlayer.setPlayerCard().setCardAngle(90);
+	thirdPlayer.setPlayerCard().setBackCardXPos(1000);
+	thirdPlayer.setPlayerCard().setBackCardYPos(250);
+	thirdPlayer.setPlayerCard().setFaceCardXPos(750);
+	thirdPlayer.setPlayerCard().setFaceCardYPos(250);
 
 	players.push_back(firstPlayer);
 	players.push_back(secondPlayer);
 	players.push_back(thirdPlayer);
 	for (int i = 0; i < players.size(); i++)
 	{
-		players.at(i).playerAtWar = false;
 		players.at(i).playerState = Player::PlayerReady;
 	}
 }
@@ -407,8 +412,40 @@ void Game::loadTextures()
 	TextureManager::Instance()->loadTexture("./assets/cardBack_red5.png",
 		"backCard",
 		renderer);
-	TextureManager::Instance()->loadTexture("./assets/start_button.png",
+	TextureManager::Instance()->loadTexture("./assets/start.png",
 		"start_button",
+		renderer);
+
+	TextureManager::Instance()->loadTexture("./assets/p1.png",
+		"player 1",
+		renderer);
+
+	TextureManager::Instance()->loadTexture("./assets/p1-inactive.png",
+		"p1-inactive",
+		renderer);
+
+	TextureManager::Instance()->loadTexture("./assets/p2.png",
+		"player 2",
+		renderer);
+
+	TextureManager::Instance()->loadTexture("./assets/p2-inactive.png",
+		"p2-inactive",
+		renderer);
+
+	TextureManager::Instance()->loadTexture("./assets/p3.png",
+		"player 3",
+		renderer);
+
+	TextureManager::Instance()->loadTexture("./assets/p3-inactive.png",
+		"p3-inactive",
+		renderer);
+
+	TextureManager::Instance()->loadTexture("./assets/c.png",
+		"card_counter",
+		renderer);
+
+	TextureManager::Instance()->loadTexture("./assets/start-inactive.png",
+		"start_inactive",
 		renderer);
 
 	for (int i = 0; i < 52; i++)

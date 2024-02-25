@@ -32,7 +32,7 @@ public:
 	void drawPlayersDeck();
 
 	// check if all active players have placed cards
-	void checkIfActivePlayersPlacedCards();
+	bool checkIfActivePlayersPlacedCards();
 	// compare players cards powers
 	void comparePlayersCardsPower();
 	// update players decks based on winner of war
@@ -71,8 +71,8 @@ private:
 	// start button position, width and height
 	int startXPos = 0;
 	const int startYPos = 50;
-	const int startWidth = 100;
-	const int startHeight = 50;
+	const int startWidth = 160;
+	const int startHeight = 80;
 
 	// mouse position
 	int mouseXUp, mouseXDown, mouseYUp, mouseYDown;
