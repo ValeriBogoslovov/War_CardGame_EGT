@@ -167,33 +167,43 @@ void Game::checkIfActivePlayersPlacedCards()
 
 void Game::comparePlayersCardsPower()
 {
-	int highestCard = players.at(0).getPlayerDiscardedDeck().top().getPower();
-	int playerId = players.at(0).getPlayerID();
-	for (int i = 1; i < players.size(); i++)
+	int previousCard = 0;
+	int previousPlayerId = 0;
+	int currentCard = 0;
+	int currentCardPlayerId = -1;
+	for (int i = 0; i < players.size(); i++)
 	{
-		int currentCard = players.at(i).getPlayerDiscardedDeck().top().getPower();
-		if (highestCard < currentCard)
+		
+		if (players.at(i).playerState == Player::Inactive)
 		{
-			highestCard = currentCard;
-			playerId = players.at(i).getPlayerID();
-			players.at(i - 1).playerState = Player::Inactive;
-			players.at(i - 1).playerAtWar = false;
-
-			players.at(playerId).playerState = Player::WonBattle;
+			continue;
 		}
-		else if (highestCard > currentCard)
-		{
-			players.at(i).playerState = Player::Inactive;
-			players.at(i).playerAtWar = false;
+		currentCard = players.at(i).getPlayerDiscardedDeck().top().getPower();
+		currentCardPlayerId = players.at(i).getPlayerID();
 
-			players.at(playerId).playerState = Player::WonBattle;
-		}
-		else if (highestCard == currentCard)
+		if (previousCard < currentCard)
 		{
-			players.at(playerId).playerAtWar = true;
-			players.at(playerId).playerState = Player::PlayerReady;
-			players.at(i).playerAtWar = true;
-			players.at(i).playerState = Player::PlayerReady;
+			previousCard = currentCard;
+			players.at(previousPlayerId).playerState = Player::Inactive;
+			previousPlayerId = players.at(currentCardPlayerId).getPlayerID();
+
+			players.at(previousPlayerId).playerState = Player::WonBattle;
+		}
+		else if (previousCard > currentCard)
+		{
+			players.at(currentCardPlayerId).playerState = Player::Inactive;
+			players.at(currentCardPlayerId).playerAtWar = false;
+			/*if (!players.at(playerId).playerAtWar)
+			{
+				players.at(playerId).playerState = Player::WonBattle;
+			}*/
+		}
+		else if (previousCard == currentCard)
+		{
+			players.at(currentCardPlayerId).playerAtWar = true;
+			players.at(currentCardPlayerId).playerState = Player::PlayerReady;
+			players.at(previousPlayerId).playerAtWar = true;
+			players.at(previousPlayerId).playerState = Player::PlayerReady;
 		}
 
 	}
@@ -213,6 +223,7 @@ void Game::updatePlayersDecks()
 		{
 			// get winner, update points of battle
 			playerId = players.at(i).getPlayerID();
+			std::cout << "Player: " << playerId + 1 << " wins" << std::endl;
 			for (int i = 0; i < discardedCards.size(); i++)
 			{
 				players.at(playerId).updatePlayerDeck().push(discardedCards.at(i));
