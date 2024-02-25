@@ -2,8 +2,10 @@
 #include <iostream>
 
 
-Card::Card(std::string face, std::string suit, std::string id, int power)
-    :face(face), suit(suit), id(id), power(power) {}
+Card::Card(int backCardX, int backCardY, int faceCardX, int faceCardY, double angle,
+    std::string face, std::string suit, std::string id, int power)
+    :backCardXPos(backCardX), backCardYPos(backCardY), faceCardXPos(faceCardX), faceCardYPos(faceCardY), angle(angle),
+    face(face), suit(suit), id(id), power(power){}
 
 std::string Card::getFace() const
 {

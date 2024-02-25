@@ -20,7 +20,7 @@ void DeckOfCards::createDeck()
 		std::string cardFace = face[i % 13];
 		std::string cardSuit = suit[i / 13];
 		int cardPower = (i % 13) + 2;
-		Card c(cardFace, cardSuit, cardId, cardPower);
+		Card c(0,0,0,0,0.0,cardFace, cardSuit, cardId, cardPower);
 		initialDeck.push_back(c);
 	}
 	std::cout << "Initial deck created.\n\n";

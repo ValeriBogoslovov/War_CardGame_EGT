@@ -35,8 +35,12 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, in
 				//set backround width and height
 				backgroundWidth = width;
 				backgroundHeight = height;
-				startXPos = (width / 2) - (startWidth / 2);
 
+				this->gameButton.updateWidth(160);
+				this->gameButton.updateHeight(80);
+				this->gameButton.updateYPos(50);
+				this->gameButton.updateIsActive(true);
+				this->gameButton.updateXPos((width / 2) - (this->gameButton.getWidth() / 2));
 				state = Initial;
 			}
 			else
@@ -72,13 +76,13 @@ void Game::render()
 	if (state == Initial)
 	{
 		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
-		TextureManager::Instance()->drawTexture("start_button", { startXPos, startYPos, startWidth, startHeight }, renderer);
+		TextureManager::Instance()->drawTexture("start_button", { gameButton.getXPos(),gameButton.getYPos(), gameButton.getWidth(),gameButton.getHeight()}, renderer);
 		SDL_RenderPresent(renderer);
 	}
 	else if (state == NormalPlay)
 	{
 		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
-		TextureManager::Instance()->drawTexture("start_inactive", { startXPos, startYPos, startWidth, startHeight }, renderer);
+		TextureManager::Instance()->drawTexture("start_inactive", { gameButton.getXPos(),gameButton.getYPos(), gameButton.getWidth(),gameButton.getHeight() }, renderer);
 
 		// draw decks
 		drawPlayersDeck();
@@ -98,8 +102,9 @@ void Game::render()
 
 void Game::update()
 {
-	if (mouseXDown > startXPos && mouseXDown < (startXPos + startWidth)
-		&& mouseYDown > startYPos && mouseYDown < (startYPos + startHeight)
+	// check if mouse click is at Start button
+	if (mouseXDown > gameButton.getXPos() && mouseXDown < (gameButton.getXPos() + gameButton.getWidth())
+		&& mouseYDown > gameButton.getYPos() && mouseYDown < (gameButton.getYPos() + gameButton.getHeight())
 		&& state == Initial)
 	{
 		std::cout << "Start pressed" << std::endl;
@@ -113,16 +118,27 @@ void Game::update()
 	{
 		for (int i = 0; i < players.size(); i++)
 		{
-			if (mouseXDown > players.at(i).getPlayerCard().getBackCardXPos()
-				&& mouseXDown < (players.at(i).getPlayerCard().getBackCardXPos() + players.at(i).getPlayerCard().getCardWidth())
-				&& mouseYDown > players.at(i).getPlayerCard().getBackCardYPos()
-				&& mouseYDown < (players.at(i).getPlayerCard().getBackCardYPos() + players.at(i).getPlayerCard().getCardHeight())
+			
+			// check if mouse is pressed on player button and the state of the player is Ready
+			if (mouseXDown > players.at(i).getPlayerButton().getXPos()
+				&& mouseXDown < (players.at(i).getPlayerButton().getXPos() + players.at(i).getPlayerButton().getWidth())
+				&& mouseYDown > players.at(i).getPlayerButton().getYPos()
+				&& mouseYDown < (players.at(i).getPlayerButton().getYPos() + players.at(i).getPlayerButton().getHeight())
 				&& players.at(i).playerState == Player::PlayerReady)
 			{
+				// change state of player so it will show card
 				players.at(i).playerState = Player::PlayerCardOpen;
+				// push the top card to the player discarded deck
 				players.at(i).updatePlayerDiscardedDeck().push(players.at(i).getPlayerDeck().front());
+				// remove top card from player deck
 				players.at(i).updatePlayerDeck().pop();
+				// add top card to the shared discarded deck
 				discardedCards.push_back(players.at(i).getPlayerDiscardedDeck().top());
+				// change player button to Inactive
+				std::string buttonId = "player_";
+				buttonId.append(std::to_string(players.at(i).getPlayerID() + 1)).append("_inactive");
+				players.at(i).updatePlayerButton().updateId(buttonId);
+				// set mouse x and y position to 0
 				mouseXDown = 0;
 				mouseYDown = 0;
 			}
@@ -136,9 +152,15 @@ void Game::drawPlayersDeck()
 	{
 		if (players.at(i).playerState == Player::PlayerReady || players.at(i).playerState == Player::Inactive)
 		{
+			std::string buttonId = "player_";
+			buttonId.append(std::to_string(players.at(i).getPlayerID() + 1));
 			TextureManager::Instance()->drawTexture(emptyCard.getID(),
 				{ players.at(i).getPlayerCard().getBackCardXPos(), players.at(i).getPlayerCard().getBackCardYPos(),
 				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getPlayerCard().getCardAngle());
+
+			TextureManager::Instance()->drawTexture(players.at(i).getPlayerButton().getId(),
+				{ players.at(i).getPlayerButton().getXPos(), players.at(i).getPlayerButton().getYPos(),
+				players.at(i).getPlayerButton().getWidth(), players.at(i).getPlayerButton().getHeight()}, renderer);
 		}
 		if ((players.at(i).getAtWar() && players.at(i).playerState != Player::Inactive)
 			|| players.at(i).playerState == Player::PlayerCardOpen)
@@ -146,6 +168,10 @@ void Game::drawPlayersDeck()
 			TextureManager::Instance()->drawTexture(emptyCard.getID(),
 				{ players.at(i).getPlayerCard().getBackCardXPos(), players.at(i).getPlayerCard().getBackCardYPos(),
 				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getPlayerCard().getCardAngle());
+
+			TextureManager::Instance()->drawTexture(players.at(i).getPlayerButton().getId(),
+				{ players.at(i).getPlayerButton().getXPos(), players.at(i).getPlayerButton().getYPos(),
+				players.at(i).getPlayerButton().getWidth(), players.at(i).getPlayerButton().getHeight() }, renderer);
 
 			TextureManager::Instance()->drawTexture(players.at(i).getPlayerDiscardedDeck().top().getID(),
 				{ players.at(i).getPlayerCard().getFaceCardXPos(), players.at(i).getPlayerCard().getFaceCardYPos(),
@@ -280,7 +306,7 @@ void Game::dealCardsToPlayers()
 {
 	deck.createDeck();
 
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 1; i++)
 	{
 		players.at(0).updatePlayerDeck().push(Card(deck.getDeck().front()));
 		deck.updateDeck().pop();
@@ -302,30 +328,9 @@ void Game::createPlayers()
 	{
 		players.clear();
 	}
-	Player firstPlayer;
-	Player secondPlayer;
-	Player thirdPlayer;
-
-	firstPlayer.setPlayerID(0);
-	firstPlayer.setPlayerCard().setCardAngle(90);
-	firstPlayer.setPlayerCard().setBackCardXPos(100);
-	firstPlayer.setPlayerCard().setBackCardYPos(250);
-	firstPlayer.setPlayerCard().setFaceCardXPos(450);
-	firstPlayer.setPlayerCard().setFaceCardYPos(250);
-
-	secondPlayer.setPlayerID(1);
-	secondPlayer.setPlayerCard().setCardAngle(0);
-	secondPlayer.setPlayerCard().setBackCardXPos(600);
-	secondPlayer.setPlayerCard().setBackCardYPos(500);
-	secondPlayer.setPlayerCard().setFaceCardXPos(600);
-	secondPlayer.setPlayerCard().setFaceCardYPos(250);
-
-	thirdPlayer.setPlayerID(2);
-	thirdPlayer.setPlayerCard().setCardAngle(90);
-	thirdPlayer.setPlayerCard().setBackCardXPos(1000);
-	thirdPlayer.setPlayerCard().setBackCardYPos(250);
-	thirdPlayer.setPlayerCard().setFaceCardXPos(750);
-	thirdPlayer.setPlayerCard().setFaceCardYPos(250);
+	Player firstPlayer(0, 100,250,450,250, 90.0, 90, 380, 120, 35, "player_1");
+	Player secondPlayer(1, 600, 500, 600, 250, 0, 590, 655, 120, 35, "player_2");
+	Player thirdPlayer(2, 1000,250,750,250, 90.0, 990, 380, 120, 35, "player_3");
 
 	players.push_back(firstPlayer);
 	players.push_back(secondPlayer);
@@ -416,36 +421,36 @@ void Game::loadTextures()
 		"start_button",
 		renderer);
 
+	TextureManager::Instance()->loadTexture("./assets/start-inactive.png",
+		"start_inactive",
+		renderer);
+
 	TextureManager::Instance()->loadTexture("./assets/p1.png",
-		"player 1",
+		"player_1",
 		renderer);
 
 	TextureManager::Instance()->loadTexture("./assets/p1-inactive.png",
-		"p1-inactive",
+		"player_1_inactive",
 		renderer);
 
 	TextureManager::Instance()->loadTexture("./assets/p2.png",
-		"player 2",
+		"player_2",
 		renderer);
 
 	TextureManager::Instance()->loadTexture("./assets/p2-inactive.png",
-		"p2-inactive",
+		"player_2_inactive",
 		renderer);
 
 	TextureManager::Instance()->loadTexture("./assets/p3.png",
-		"player 3",
+		"player_3",
 		renderer);
 
 	TextureManager::Instance()->loadTexture("./assets/p3-inactive.png",
-		"p3-inactive",
+		"player_3_inactive",
 		renderer);
 
 	TextureManager::Instance()->loadTexture("./assets/c.png",
 		"card_counter",
-		renderer);
-
-	TextureManager::Instance()->loadTexture("./assets/start-inactive.png",
-		"start_inactive",
 		renderer);
 
 	for (int i = 0; i < 52; i++)

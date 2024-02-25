@@ -1,39 +1,30 @@
 #pragma once
 
 #include "Card.h"
+#include "Button.h"
 #include <queue>
 #include <stack>
 
 class Player
 {
 public:
+	Player(int id = -1, int backCardX = 0, int backCardY = 0, int faceCardX = 0, 
+		int faceCardY = 0, double cardAngle = 0.0, int buttonX = 0, int buttonY = 0,
+		int buttonWidth = 0, int buttonHeight = 0, std::string buttonId = "");
 	//setters, updaters
-	void addCard(Card c);
 	void setPlayerID(int id);
 	void updateAtWar(bool isAtWar);
-	//void setCardAngle(double angle);
-	//void setPlayerBackCardPosX(int posX);
-	//void setPlayerBackCardPosY(int posY);
-	//void setPlayerFaceUpCardPosX(int posX);
-	//void setPlayerFaceUpCardPosY(int posY);
 	std::queue<Card>& updatePlayerDeck();
 	std::stack<Card>& updatePlayerDiscardedDeck();
 	Card& setPlayerCard();
-
+	Button& updatePlayerButton();
 	// getters
 	std::queue<Card> getPlayerDeck() const;
 	std::stack<Card> getPlayerDiscardedDeck() const;
 	int getPlayerID() const;
 	bool getAtWar()const;
-	//double getCardAngle()const;
-	//int getPlayerBackCardPosX()const;
-	//int getPlayerBackCardPosY()const;
-	//int getPlayerFaceUpCardPosX()const;
-	//int getPlayerFaceUpCardPosY()const;
 	Card getPlayerCard();
-
-
-	//bool playerAtWar = false;
+	Button getPlayerButton();
 
 	enum PlayerState {
 		PlayerReady,
@@ -48,13 +39,8 @@ private:
 	std::queue<Card> playerDeck;
 	std::stack<Card> playerDiscardedCards;
 	int playerID;
-	//double playerCardAngle;
 	bool isAtWar = false;
 	Card playerCard;
-	// player back and face up card position x and y
-	//int playerBackCardPosX;
-	//int playerBackCardPosY;
-	//int playerFaceCardPosX;
-	//int playerFaceCardPosY;
+	Button playerButton;
 };
 

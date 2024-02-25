@@ -68,11 +68,7 @@ private:
 	int backgroundWidth;
 	int backgroundHeight;
 
-	// start button position, width and height
-	int startXPos = 0;
-	const int startYPos = 50;
-	const int startWidth = 160;
-	const int startHeight = 80;
+	Button gameButton;
 
 	// mouse position
 	int mouseXUp, mouseXDown, mouseYUp, mouseYDown;

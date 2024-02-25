@@ -1,9 +1,9 @@
 #include "Player.h"
 
-void Player::addCard(Card c)
-{
-    playerDeck.push(c);
-}
+Player::Player(int id, int backCardX, int backCardY, int faceCardX,
+    int faceCardY, double cardAngle, int buttonX, int buttonY, int buttonWidth, int buttonHeight, std::string buttonId)
+    : playerID(id), playerButton(buttonX, buttonY, buttonWidth, buttonHeight, buttonId), 
+    playerCard(backCardX, backCardY, faceCardX, faceCardY, cardAngle) {}
 
 void Player::setPlayerID(int id)
 {
@@ -40,6 +40,11 @@ Card& Player::setPlayerCard()
     return this->playerCard;
 }
 
+Button& Player::updatePlayerButton()
+{
+    return this->playerButton;
+}
+
 int Player::getPlayerID() const
 {
     return this->playerID;
@@ -53,4 +58,9 @@ bool Player::getAtWar() const
 Card Player::getPlayerCard()
 {
     return this->playerCard;
+}
+
+Button Player::getPlayerButton()
+{
+    return this->playerButton;
 }
