@@ -1,5 +1,6 @@
 #pragma once
-
+#include "SDL.h"
+#include "SDL_ttf.h"
 #include "Card.h"
 #include "Button.h"
 #include <queue>
@@ -14,6 +15,9 @@ public:
 	//setters, updaters
 	void setPlayerID(int id);
 	void updateAtWar(bool isAtWar);
+	bool cardCounter(SDL_Renderer* ren);
+	void updateCardText(int x, int y, int w, int h);
+	void updateCardCounter(int x, int y, int w, int h);
 	std::queue<Card>& updatePlayerDeck();
 	std::stack<Card>& updatePlayerDiscardedDeck();
 	Card& setPlayerCard();
@@ -25,6 +29,8 @@ public:
 	bool getAtWar()const;
 	Card getPlayerCard();
 	Button getPlayerButton();
+	SDL_Rect getCardText() const;
+	SDL_Rect getCardCounter() const;
 
 	enum PlayerState {
 		PlayerReady,
@@ -42,5 +48,12 @@ private:
 	bool isAtWar = false;
 	Card playerCard;
 	Button playerButton;
+
+	// font
+	TTF_Font* font;
+	SDL_Texture* cardsText;
+	SDL_Texture* cardsCount;
+	SDL_Rect cardsTextDestRect;
+	SDL_Rect cardsCountDestRect;
 };
 

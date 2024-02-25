@@ -4,6 +4,7 @@
 
 #include "Player.h"
 #include "DeckOfCards.h"
+#include "SoundManager.h"
 
 class Game
 {
@@ -27,10 +28,8 @@ public:
 	void createPlayers();
 	// populate players's queue of Card from DeckOfCards, called in Init()
 	void dealCardsToPlayers();
-
 	// draw players deck
 	void drawPlayersDeck();
-
 	// check if all active players have placed cards
 	bool checkIfActivePlayersPlacedCards();
 	// compare players cards powers
@@ -38,7 +37,6 @@ public:
 	// update players decks based on winner of war
 	void updatePlayersDecks();
 
-	bool isWar = false;
 	// draw card from rest of deck
 	Card pickCard();
 	// getter and setter for vector of Player
@@ -63,7 +61,7 @@ private:
 	// empty Card used for xPos and yPos and width and height
 	Card emptyCard;
 	// load all images func, called in Init()
-	void loadTextures();
+	void loadTexturesAndSounds();
 	// background width and height, initialized in Init()
 	int backgroundWidth;
 	int backgroundHeight;

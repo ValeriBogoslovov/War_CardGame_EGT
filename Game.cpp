@@ -30,7 +30,7 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, in
 				SDL_SetRenderDrawColor(renderer, 255, 100, 100, 255);
 
 				// load textures
-				loadTextures();
+				loadTexturesAndSounds();
 
 				//set backround width and height
 				backgroundWidth = width;
@@ -108,6 +108,7 @@ void Game::update()
 		&& state == Initial)
 	{
 		std::cout << "Start pressed" << std::endl;
+		//SoundManager::Instance()->playBackgroundMusic("music", -1);
 		createPlayers();
 		// populate players deck
 		dealCardsToPlayers();
@@ -141,6 +142,8 @@ void Game::update()
 				// set mouse x and y position to 0
 				mouseXDown = 0;
 				mouseYDown = 0;
+				// play sound effect
+				SoundManager::Instance()->playSFX("sfx2", 0);
 			}
 		}
 	}
@@ -150,6 +153,7 @@ void Game::drawPlayersDeck()
 {
 	for (int i = 0; i < players.size(); i++)
 	{
+		players.at(i).cardCounter(renderer);
 		if (players.at(i).playerState == Player::PlayerReady || players.at(i).playerState == Player::Inactive)
 		{
 			std::string buttonId = "player_";
@@ -306,7 +310,7 @@ void Game::dealCardsToPlayers()
 {
 	deck.createDeck();
 
-	for (int i = 0; i < 1; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		players.at(0).updatePlayerDeck().push(Card(deck.getDeck().front()));
 		deck.updateDeck().pop();
@@ -328,9 +332,20 @@ void Game::createPlayers()
 	{
 		players.clear();
 	}
+
 	Player firstPlayer(0, 100,250,450,250, 90.0, 90, 380, 120, 35, "player_1");
 	Player secondPlayer(1, 600, 500, 600, 250, 0, 590, 655, 120, 35, "player_2");
-	Player thirdPlayer(2, 1000,250,750,250, 90.0, 990, 380, 120, 35, "player_3");
+	Player thirdPlayer(2, 1000, 250, 750, 250, 90.0, 990, 380, 120, 35, "player_3");
+
+	firstPlayer.updateCardText(90, 220, 100, 45);
+	firstPlayer.updateCardCounter(180, 220, 35, 45);
+
+	secondPlayer.updateCardText(600, 450, 100, 45);
+	secondPlayer.updateCardCounter(690, 450, 35, 45);
+
+	thirdPlayer.updateCardText(990, 220, 100, 45);
+	thirdPlayer.updateCardCounter(1080, 220, 35, 45);
+
 
 	players.push_back(firstPlayer);
 	players.push_back(secondPlayer);
@@ -409,7 +424,7 @@ std::vector<Card>& Game::updateDiscardedCards()
 }
 
 
-void Game::loadTextures()
+void Game::loadTexturesAndSounds()
 {
 	TextureManager::Instance()->loadTexture("./assets/background.jpg",
 		"background",
@@ -452,6 +467,12 @@ void Game::loadTextures()
 	TextureManager::Instance()->loadTexture("./assets/c.png",
 		"card_counter",
 		renderer);
+
+	SoundManager::Instance()->loadMusicAndSFX("./assets/music.mp3", "music", 1);
+
+	SoundManager::Instance()->loadMusicAndSFX("./assets/card-deal1.ogg", "sfx1", 0);
+
+	SoundManager::Instance()->loadMusicAndSFX("./assets/card-deal2.ogg", "sfx2", 0);
 
 	for (int i = 0; i < 52; i++)
 	{
