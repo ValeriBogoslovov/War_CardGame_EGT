@@ -6,7 +6,7 @@
 
 void DeckOfCards::createDeck()
 {
-	const std::string suit[4] = { "Hearts", "Diamonds", "Clubs", "Spades" };
+	const std::string suit[4] = { "Spades", "Diamonds", "Hearts", "Clubs" };
 	// clear queue
 	const std::string face[13] =
 	{ "Deuce", "Three", "Four",

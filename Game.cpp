@@ -4,6 +4,8 @@
 
 #include "Game.h"
 #include "TextureManager.h"
+// id for the vector of flipped cards
+int Game::flippedCardId = 0;
 
 Game::Game()
 {
@@ -191,15 +193,8 @@ void Game::drawPlayersCardsUp()
 	}
 	else if (state == WarPlay)
 	{
-		int lastElementId = 0;
-		if (discardedCards.size() % 2 == 0)
-		{
-			lastElementId = discardedCards.size() / 2;
-		}
-		else
-		{
-			lastElementId = (discardedCards.size() / 2) - 1;
-		}
+		int lastElementId = discardedCards.size();
+		
 		for (int i = 0; i < players.size(); i++)
 		{
 			if (players.at(i).playerShowWarCard)
@@ -221,7 +216,7 @@ void Game::drawPlayersCardsUp()
 					{ players.at(i).getPlayerBackCardPosX(), players.at(i).getPlayerBackCardPosY(),
 					emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getCardAngle());
 				// draw face up card
-				TextureManager::Instance()->drawTexture(discardedCards.at(lastElementId).getID(),
+				TextureManager::Instance()->drawTexture(discardedCards.at(lastElementId - flippedCardId).getID(),
 					{ players.at(i).getPlayerFaceUpCardPosX(), players.at(i).getPlayerFaceUpCardPosY(),
 					emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer);
 				++lastElementId;
@@ -292,7 +287,7 @@ void Game::updatePlayersDecks()
 	// for loop for checking if someone won
 	for (int i = 0; i < players.size(); i++)
 	{
-		// if playerWonBattle returns true increment winner count and get Id
+		// if playerWonBattle returns true, increment winner count and get Id
 		if (players.at(i).playerWonBattle)
 		{
 			playerWonCounter++;
@@ -308,8 +303,8 @@ void Game::updatePlayersDecks()
 		{
 			if (players.at(i).playerAtWar)
 			{
-				continue;
 				players.at(i).playerShowWarCard = false;
+				continue;
 			}
 			discardedCards.push_back(players.at(i).getPlayerDeck().front());
 			players.at(i).updatePlayerDeck().pop();
@@ -341,10 +336,13 @@ void Game::updatePlayersDecks()
 	}
 	else
 	{
+		flippedCardId = 0;
 		for (int i = 0; i < players.size(); i++)
 		{
 			if (players.at(i).playerAtWar)
 			{
+				flippedCardId++;
+
 				players.at(i).playerWonBattle = false;
 				players.at(i).playerLostBattle = false;
 				players.at(i).playerShowCard = false;
@@ -390,11 +388,11 @@ void Game::dealCardsToPlayers()
 {
 	deck.createDeck();
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 1; i++)
 	{
-		players.at(0).updatePlayerDeck().push(Card(std::to_string(i+2), "Hearts", std::to_string(i), i+2));
+		players.at(0).updatePlayerDeck().push(Card(std::to_string(i+2), "Spades", std::to_string(i), i+2));
 		deck.updateDeck().pop();
-		players.at(1).updatePlayerDeck().push(Card(std::to_string(i+2), "Hearts", std::to_string(i + 13), i+2));
+		players.at(1).updatePlayerDeck().push(Card(std::to_string(i+2), "Diamonds", std::to_string(i + 13), i+2));
 		deck.updateDeck().pop();
 		players.at(2).updatePlayerDeck().push(Card(std::to_string(i+2), "Hearts", std::to_string(i + 26), i+2));
 		deck.updateDeck().pop();

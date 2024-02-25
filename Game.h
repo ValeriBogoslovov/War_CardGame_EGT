@@ -85,4 +85,6 @@ private:
 		Statistics
 	};
 	GameState state;
+
+	static int flippedCardId;
 };
