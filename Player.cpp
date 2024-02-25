@@ -1,6 +1,5 @@
 #include "Player.h"
 
-
 void Player::addCard(Card c)
 {
     playerDeck.push(c);
@@ -46,9 +45,19 @@ std::queue<Card> Player::getPlayerDeck() const
     return this->playerDeck;
 }
 
+std::stack<Card> Player::getPlayerDiscardedDeck() const
+{
+    return this->playerDiscardedCards;
+}
+
 std::queue<Card>& Player::updatePlayerDeck()
 {
     return this->playerDeck;
+}
+
+std::stack<Card>& Player::updatePlayerDiscardedDeck()
+{
+    return this->playerDiscardedCards;
 }
 
 int Player::getPlayerID() const

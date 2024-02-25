@@ -1,8 +1,6 @@
 #pragma once
 #include <queue>
 #include <vector>
-#include <memory>
-
 #include "Card.h"
 
 class DeckOfCards
@@ -14,6 +12,5 @@ public:
 private:
 	std::queue<Card> shuffledDeck;
 	std::vector<Card> initialDeck;
-
 };
 

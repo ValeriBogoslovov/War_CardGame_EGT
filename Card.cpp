@@ -1,10 +1,9 @@
 #include "Card.h"
 #include <iostream>
 
-int Card::destructorCount = 0;
 
 Card::Card(std::string face, std::string suit, std::string id, int power)
-    :face(face), suit(suit), id(id), power(power){}
+    :face(face), suit(suit), id(id), power(power) {}
 
 std::string Card::getFace() const
 {
@@ -34,10 +33,4 @@ int Card::getCardWidth()
 int Card::getCardHeight()
 {
     return this->cardHeight;
-}
-
-Card::~Card()
-{
-    //++destructorCount;
-    //std::cout << "Card Destructor called: " << destructorCount << " times.\n";
 }

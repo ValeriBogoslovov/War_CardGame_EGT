@@ -11,7 +11,7 @@ void DeckOfCards::createDeck()
 	const std::string face[13] =
 	{ "Deuce", "Three", "Four",
 		"Five", "Six", "Seven", "Eight", "Nine",
-		"Ten", "Jack", "Queen", "King", "Ace"};
+		"Ten", "Jack", "Queen", "King", "Ace" };
 
 	// fill initial vector deck
 	for (int i = 0; i < 52; i++)
@@ -26,7 +26,7 @@ void DeckOfCards::createDeck()
 	std::cout << "Initial deck created.\n\n";
 	// uniformly-distributed integer random number generator
 	std::random_device rdSeed;
-	
+
 	// random number engine based on Mersenne Twister algorithm
 	std::mt19937 rngGenerator(rdSeed());
 

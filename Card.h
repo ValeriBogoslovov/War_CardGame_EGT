@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 
 class Card
@@ -12,13 +13,11 @@ public:
 
 	int getCardWidth();
 	int getCardHeight();
-	~Card();
 private:
 	std::string face;
 	std::string suit;
 	std::string id;
 	int power;
-	static int destructorCount;
 
 	int cardWidth = 100;
 	int cardHeight = 150;

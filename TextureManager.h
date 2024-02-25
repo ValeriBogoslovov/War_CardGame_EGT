@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 
+
 class TextureManager
 {
 public:
@@ -32,6 +33,5 @@ private:
 	TextureManager() {}
 	std::map<std::string, SDL_Texture*> textureMap;
 	static TextureManager* instance;
-
 };
 

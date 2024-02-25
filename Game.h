@@ -30,8 +30,7 @@ public:
 
 	// draw players deck
 	void drawPlayersDeck();
-	// draw players cards face up
-	void drawPlayersCardsUp();
+
 	// check if all active players have placed cards
 	void checkIfActivePlayersPlacedCards();
 	// compare players cards powers
@@ -85,6 +84,5 @@ private:
 		Statistics
 	};
 	GameState state;
-
-	static int flippedCardId;
 };
+
