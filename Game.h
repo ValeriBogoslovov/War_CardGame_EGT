@@ -5,7 +5,7 @@
 #include "Player.h"
 #include "DeckOfCards.h"
 #include "SoundManager.h"
-#include "Statistics.h"
+//#include "Statistics.h"
 
 class Game
 {
@@ -80,7 +80,6 @@ private:
 	enum GameState {
 		Initial,
 		NormalPlay,
-		WarPlay,
 		Statistics
 	};
 	GameState state;

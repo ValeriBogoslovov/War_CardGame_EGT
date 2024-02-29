@@ -35,14 +35,6 @@ int main(int argc, char* argv[])
 	}
 	game->clean();
 
-	//TO DO
-	// Deal cards - done
-	// Implement rules (check for wars, power of cards)
-	// Point system -> Statistic static members for each player?
-	// Restart game
-	// Statistics
-	// Graphics
-
 	delete game;
 	game = nullptr;
     return 0;

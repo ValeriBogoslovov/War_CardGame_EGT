@@ -67,7 +67,6 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, in
 
 void Game::render()
 {
-	SDL_Delay(100);
 	SDL_RenderClear(renderer);
 	
 	int width, height;
@@ -89,6 +88,7 @@ void Game::render()
 		// draw decks
 		drawPlayersDeck();
 		// check placed cards of Active players
+		SDL_RenderPresent(renderer);
 		if (checkIfActivePlayersPlacedCards())
 		{
 			// compare power of players cards
@@ -96,8 +96,6 @@ void Game::render()
 			// update players deck after comparison
 			updatePlayersDecks();
 		}
-		
-		SDL_RenderPresent(renderer);
 	}
 
 }
@@ -224,7 +222,7 @@ void Game::comparePlayersCardsPower()
 	int previousCard = 0;
 	int previousPlayerId = 0;
 	int currentCard = 0;
-	int currentCardPlayerId = -1;
+	//int currentCardPlayerId = 0;
 
 	for (int i = 0; i < players.size(); i++)
 	{
@@ -234,26 +232,24 @@ void Game::comparePlayersCardsPower()
 			continue;
 		}
 		currentCard = players.at(i).getPlayerDiscardedDeck().top().getPower();
-		currentCardPlayerId = players.at(i).getPlayerID();
 
 		if (previousCard < currentCard)
 		{
-			previousCard = currentCard;
 			players.at(previousPlayerId).playerState = Player::Inactive;
-			previousPlayerId = players.at(currentCardPlayerId).getPlayerID();
-
-			players.at(previousPlayerId).playerState = Player::WonBattle;
+			players.at(i).playerState = Player::WonBattle;
+			previousPlayerId = i;
+			previousCard = currentCard;
 		}
 		else if (previousCard > currentCard)
 		{
-			players.at(currentCardPlayerId).playerState = Player::Inactive;
-			players.at(currentCardPlayerId).updateAtWar(false);
+			players.at(i).playerState = Player::Inactive;
+			players.at(i).updateAtWar(false);
 
 		}
 		else if (previousCard == currentCard)
 		{
-			players.at(currentCardPlayerId).updateAtWar(true);
-			players.at(currentCardPlayerId).playerState = Player::PlayerReady;
+			players.at(i).updateAtWar(true);
+			players.at(i).playerState = Player::PlayerReady;
 			players.at(previousPlayerId).updateAtWar(true);
 			players.at(previousPlayerId).playerState = Player::PlayerReady;
 		}
@@ -277,15 +273,15 @@ void Game::updatePlayersDecks()
 			playerId = players.at(i).getPlayerID();
 			std::cout << "Player: " << playerId + 1 << " wins" << std::endl;
 			players.at(i).hasWon = true;
-			for (int i = 0; i < discardedCards.size(); i++)
+			for (int j = 0; j < discardedCards.size(); j++)
 			{
-				players.at(playerId).updatePlayerDeck().push(discardedCards.at(i));
+				players.at(i).updatePlayerDeck().push(discardedCards.at(j));
 			}
 			discardedCards.clear();
-			for (int i = 0; i < players.size(); i++)
+			for (int k = 0; k < players.size(); k++)
 			{
-				players.at(i).playerState = Player::PlayerReady;
-				players.at(i).updateAtWar(false);
+				players.at(k).playerState = Player::PlayerReady;
+				players.at(k).updateAtWar(false);
 			}
 			break;
 		}
@@ -372,6 +368,10 @@ void Game::dealCardsToPlayers()
 		players.at(2).updatePlayerDeck().push(Card(deck.getDeck().front()));
 		deck.updateDeck().pop();
 	}
+	//players.at(0).updatePlayerDeck().push(Card(0,0,0,0,0,"","", "3",5));
+	//players.at(1).updatePlayerDeck().push(Card(0, 0, 0, 0, 0, "", "", "2", 4));
+	//players.at(2).updatePlayerDeck().push(Card(0, 0, 0, 0, 0, "", "", "16", 5));
+	//players.at(2).updatePlayerDeck().push(Card(0, 0, 0, 0, 0, "", "", "24", 13));
 
 	players.at(0).playerState = Player::PlayerReady;
 	players.at(1).playerState = Player::PlayerReady;
