@@ -80,6 +80,7 @@ private:
 	enum GameState {
 		Initial,
 		NormalPlay,
+		CardsDelay,
 		Statistics
 	};
 	GameState state;

@@ -76,14 +76,16 @@ void Game::render()
 	{
 
 		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
-		TextureManager::Instance()->drawTexture("start_button", { gameButton.getXPos(),gameButton.getYPos(), gameButton.getWidth(),gameButton.getHeight()}, renderer);
+		TextureManager::Instance()->drawTexture("start_button", { gameButton.getXPos(),gameButton.getYPos(), gameButton.getWidth(),
+			gameButton.getHeight()}, renderer);
 		SDL_RenderPresent(renderer);
 	}
 	else if (state == NormalPlay)
 	{
 
 		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
-		TextureManager::Instance()->drawTexture("start_inactive", { gameButton.getXPos(),gameButton.getYPos(), gameButton.getWidth(),gameButton.getHeight() }, renderer);
+		TextureManager::Instance()->drawTexture("start_inactive", { gameButton.getXPos(),gameButton.getYPos(), gameButton.getWidth(),
+			gameButton.getHeight() }, renderer);
 
 		// draw decks
 		drawPlayersDeck();
@@ -97,6 +99,43 @@ void Game::render()
 			updatePlayersDecks();
 		}
 	}
+	else if (state == CardsDelay)
+	{
+		TextureManager::Instance()->drawTexture("background", { 0,0,backgroundWidth, backgroundHeight }, renderer);
+		TextureManager::Instance()->drawTexture("start_inactive", { gameButton.getXPos(),gameButton.getYPos(), 
+			gameButton.getWidth(),gameButton.getHeight() }, renderer);
+		int atWarCounter = 0;
+		for (int i = 0; i < players.size(); i++)
+		{
+			TextureManager::Instance()->drawTexture(emptyCard.getID(),
+				{ players.at(i).getPlayerCard().getBackCardXPos(), players.at(i).getPlayerCard().getBackCardYPos(),
+				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer, players.at(i).getPlayerCard().getCardAngle());
+
+			TextureManager::Instance()->drawTexture(players.at(i).getPlayerButton().getId(),
+				{ players.at(i).getPlayerButton().getXPos(), players.at(i).getPlayerButton().getYPos(),
+				players.at(i).getPlayerButton().getWidth(), players.at(i).getPlayerButton().getHeight() }, renderer);
+
+			TextureManager::Instance()->drawTexture(players.at(i).getPlayerDiscardedDeck().top().getID(),
+				{ players.at(i).getPlayerCard().getFaceCardXPos(), players.at(i).getPlayerCard().getFaceCardYPos(),
+				emptyCard.getCardWidth(), emptyCard.getCardHeight() }, renderer);
+
+			if (players.at(i).getAtWar())
+			{
+				atWarCounter++;
+			}
+			players.at(i).cardCounter(renderer);
+		}
+		if (atWarCounter == 0)
+		{
+			showWinnerOfBattle(renderer);
+		}
+		
+
+		SDL_RenderPresent(renderer);
+		
+		state = NormalPlay;
+		SDL_Delay(2500);
+	}
 
 }
 
@@ -109,7 +148,7 @@ void Game::update()
 	{
 		SoundManager::Instance()->playBackgroundMusic("start", 0);
 		SDL_Delay(1200);
-		SoundManager::Instance()->playBackgroundMusic("music", 0);
+		SoundManager::Instance()->playBackgroundMusic("music", -1);
 
 		std::cout << "Start pressed" << std::endl;
 		createPlayers();
@@ -178,7 +217,7 @@ void Game::drawPlayersDeck()
 			TextureManager::Instance()->drawTexture(players.at(i).getPlayerButton().getId(),
 				{ players.at(i).getPlayerButton().getXPos(), players.at(i).getPlayerButton().getYPos(),
 				players.at(i).getPlayerButton().getWidth(), players.at(i).getPlayerButton().getHeight()}, renderer);
-			showWinnerOfBattle(renderer);
+			//showWinnerOfBattle(renderer);
 		}
 		if ((players.at(i).getAtWar() && players.at(i).playerState != Player::Inactive)
 			|| players.at(i).playerState == Player::PlayerCardOpen)
@@ -317,7 +356,10 @@ void Game::updatePlayersDecks()
 		std::cout << "Player " << players.at(0).getPlayerID() + 1 << " WINS THE GAME!" << std::endl;
 		state = Initial;
 	}
-
+	else
+	{
+		state = CardsDelay;
+	}
 }
 
 bool Game::showWinnerOfBattle(SDL_Renderer* ren)
